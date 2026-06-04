@@ -314,16 +314,16 @@ const podcastReward = {
 };
 
 const mapNodes = [
-  { id: "platform1", kind: "platform", title: "Mario 1", subtitle: "College", x: 188, y: 370, level: 1 },
-  { id: "platform2", kind: "platform", title: "Mario 2", subtitle: "Famille", x: 338, y: 430, level: 2 },
-  { id: "sass", kind: "minigame", title: "Blagues", subtitle: "Daron", x: 486, y: 344, level: 3 },
-  { id: "skincare", kind: "minigame", title: "Make-up", subtitle: "Avant Moulin", x: 642, y: 414, level: 4 },
-  { id: "platform3", kind: "platform", title: "Mario 3", subtitle: "Moulin", x: 798, y: 342, level: 5 },
-  { id: "momParty", kind: "minigame", title: "Maman", subtitle: "S'incruste", x: 940, y: 442, level: 6 },
-  { id: "parental", kind: "minigame", title: "Controle", subtitle: "Telephone", x: 1038, y: 318, level: 7 },
-  { id: "fighter", kind: "minigame", title: "Street Johanne", subtitle: "Taxi Papa", x: 1122, y: 446, level: 8 },
-  { id: "finale", kind: "finale", title: "Special AYA", subtitle: "Rythme", x: 1186, y: 286, level: 9 },
-  { id: "showcase", kind: "video", title: "Showcase", subtitle: "AYA au Moulin", x: 1200, y: 404, level: 10 },
+  { id: "platform1", kind: "platform", title: "Mario 1", subtitle: "College", x: 184, y: 332, level: 1 },
+  { id: "platform2", kind: "platform", title: "Mario 2", subtitle: "Famille", x: 336, y: 470, level: 2 },
+  { id: "sass", kind: "minigame", title: "Blagues", subtitle: "Daron", x: 488, y: 332, level: 3 },
+  { id: "skincare", kind: "minigame", title: "Make-up", subtitle: "Avant Moulin", x: 640, y: 502, level: 4 },
+  { id: "platform3", kind: "platform", title: "Mario 3", subtitle: "Moulin", x: 794, y: 342, level: 5 },
+  { id: "momParty", kind: "minigame", title: "Maman", subtitle: "S'incruste", x: 928, y: 514, level: 6 },
+  { id: "parental", kind: "minigame", title: "Controle", subtitle: "Telephone", x: 1036, y: 318, level: 7 },
+  { id: "fighter", kind: "minigame", title: "Street Johanne", subtitle: "Taxi Papa", x: 1118, y: 500, level: 8 },
+  { id: "finale", kind: "finale", title: "Special AYA", subtitle: "Rythme", x: 1182, y: 250, level: 9 },
+  { id: "showcase", kind: "video", title: "Showcase", subtitle: "AYA au Moulin", x: 1184, y: 404, level: 10 },
 ];
 
 const platformRuns = {
@@ -2911,15 +2911,16 @@ function drawCoverImage(image) {
 function drawWorldMap() {
   ctx.clearRect(0, 0, W, H);
   const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, "#6fb7d6");
-  bg.addColorStop(0.5, "#98d8c0");
-  bg.addColorStop(1, "#1f6f9a");
+  bg.addColorStop(0, "#7fc9e6");
+  bg.addColorStop(0.45, "#b9dfc7");
+  bg.addColorStop(1, "#26799a");
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
   drawIsometricSea();
   drawIsometricCityGrid();
   drawIsometricMapRoute();
+  drawMapDistrictLandmarks();
 
   drawMapLandmarkForNode(mapNodes[0], "college");
   drawMapLandmarkForNode(mapNodes[1], "parents");
@@ -2937,63 +2938,130 @@ function drawWorldMap() {
   drawSelectedMapPanel();
 
   ctx.fillStyle = "rgba(6,10,16,0.7)";
-  ctx.fillRect(56, 40, 548, 96);
+  ctx.fillRect(52, 38, 516, 104);
   ctx.strokeStyle = "rgba(255, 239, 198, 0.78)";
   ctx.lineWidth = 4;
-  ctx.strokeRect(62, 46, 536, 84);
+  ctx.strokeRect(58, 44, 504, 92);
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 38px system-ui";
   ctx.fillText("MimieBros", 96, 92);
+  ctx.fillStyle = "#ffd8ef";
+  ctx.font = "italic 800 18px system-ui";
+  ctx.fillText("The Aya Quest", 316, 92);
   ctx.fillStyle = "#ffcf4e";
   ctx.font = "800 16px system-ui";
-  ctx.fillText("Les univers se revelent au fur et a mesure", 96, 122);
+  ctx.fillText("Carte de Douarnenez: les univers se revelent au fur et a mesure", 96, 122);
 }
 
 function drawIsometricSea() {
-  ctx.fillStyle = "#1f8fb5";
+  const sea = ctx.createLinearGradient(0, 288, 0, H);
+  sea.addColorStop(0, "#2c9ec3");
+  sea.addColorStop(1, "#156b9a");
+  ctx.fillStyle = sea;
   ctx.beginPath();
-  ctx.moveTo(0, 520);
-  ctx.lineTo(230, 470);
-  ctx.lineTo(520, 610);
-  ctx.lineTo(380, H);
+  ctx.moveTo(0, 468);
+  ctx.lineTo(212, 424);
+  ctx.lineTo(426, 526);
+  ctx.lineTo(652, 600);
+  ctx.lineTo(762, H);
   ctx.lineTo(0, H);
   ctx.closePath();
   ctx.fill();
 
-  ctx.fillStyle = "rgba(248,239,208,0.36)";
-  for (let x = -40; x < 520; x += 118) {
-    ctx.fillRect(x, 604 + Math.sin(x) * 8, 78, 4);
+  ctx.fillStyle = "rgba(248,239,208,0.34)";
+  for (let x = -70; x < 820; x += 116) {
+    const y = 536 + Math.sin(x * 0.05) * 18 + (x > 420 ? 48 : 0);
+    ctx.fillRect(x, y, 82, 4);
+    ctx.fillRect(x + 38, y + 34, 58, 3);
   }
 
-  ctx.fillStyle = "#f8efd0";
-  ctx.fillRect(84, 548, 52, 14);
-  ctx.fillStyle = "#d94c3f";
-  ctx.fillRect(122, 536, 28, 11);
-  ctx.fillStyle = "#3a4d58";
-  ctx.fillRect(96, 562, 82, 5);
+  drawMapBoat(88, 548, "#d94c3f", 1.08);
+  drawMapBoat(256, 624, "#f2d67a", 0.86);
+  drawMapBoat(462, 574, "#ff9ec5", 0.72);
+  drawMapSailboat(604, 626, 0.8);
+  drawMapSailboat(172, 650, 0.62);
+
+  ctx.fillStyle = "#d8c08a";
+  ctx.beginPath();
+  ctx.moveTo(252, 466);
+  ctx.lineTo(532, 594);
+  ctx.lineTo(488, 616);
+  ctx.lineTo(210, 488);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "#9b7d52";
+  ctx.beginPath();
+  ctx.moveTo(292, 480);
+  ctx.lineTo(542, 592);
+  ctx.lineTo(532, 600);
+  ctx.lineTo(282, 488);
+  ctx.closePath();
+  ctx.fill();
 }
 
 function drawIsometricCityGrid() {
-  for (let row = 0; row < 7; row += 1) {
-    for (let col = 0; col < 10; col += 1) {
-      const x = 176 + col * 105 + row * 38;
-      const y = 176 + row * 54;
-      if (x > 1210 || y > 585) continue;
-      const coastal = row > 4 && col < 3;
-      const plaza = (row === 2 && col > 4) || (row === 4 && col > 6);
-      const color = coastal ? "#5bb0c8" : plaza ? "#c4c1a6" : (row + col) % 2 ? "#7dbd89" : "#8bcf99";
-      drawIsoTile(x, y, color);
+  const land = ctx.createLinearGradient(150, 110, 1180, 588);
+  land.addColorStop(0, "#a9d783");
+  land.addColorStop(0.45, "#7fbd85");
+  land.addColorStop(0.72, "#d5c081");
+  land.addColorStop(1, "#6aa9b5");
+
+  ctx.fillStyle = "rgba(5, 6, 9, 0.22)";
+  ctx.beginPath();
+  ctx.moveTo(90, 268);
+  ctx.lineTo(572, 64);
+  ctx.lineTo(1288, 382);
+  ctx.lineTo(762, 654);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = land;
+  ctx.beginPath();
+  ctx.moveTo(78, 244);
+  ctx.lineTo(570, 42);
+  ctx.lineTo(1270, 354);
+  ctx.lineTo(736, 626);
+  ctx.closePath();
+  ctx.fill();
+
+  for (let row = 0; row < 9; row += 1) {
+    for (let col = 0; col < 12; col += 1) {
+      const x = 150 + col * 92 + row * 42;
+      const y = 192 + row * 42 - col * 7;
+      if (x < 100 || x > 1210 || y < 120 || y > 590) continue;
+      const harbor = row > 5 && col < 4;
+      const beach = row > 6 && col > 2 && col < 7;
+      const town = row > 1 && row < 6 && col > 3 && col < 9;
+      const park = (row + col) % 5 === 0;
+      const color = harbor ? "#58aac2"
+        : beach ? "#d8c08a"
+          : town ? "#b8b18e"
+            : park ? "#98cf75"
+              : (row + col) % 2 ? "#7fbd85" : "#8acb79";
+      drawIsoTile(x, y, color, 50, 25);
+      if (town && (row + col) % 2 === 0) drawIsoBuilding(x, y - 16, (row + col) % 3);
     }
   }
 
-  ctx.strokeStyle = "rgba(248,239,208,0.28)";
-  ctx.lineWidth = 3;
-  for (let i = 0; i < 6; i += 1) {
-    ctx.beginPath();
-    ctx.moveTo(138 + i * 142, 210 + i * 2);
-    ctx.lineTo(520 + i * 142, 406 + i * 2);
-    ctx.stroke();
-  }
+  drawIsoRoad([[128, 244], [304, 326], [470, 286], [640, 390], [792, 314], [972, 408], [1166, 356]], "#f8efd0", 18);
+  drawIsoRoad([[280, 514], [430, 438], [642, 500], [820, 422], [1000, 514], [1184, 404]], "#f8efd0", 14);
+  drawIsoRoad([[562, 86], [646, 180], [760, 246], [794, 342], [900, 448]], "rgba(255,207,78,0.68)", 9);
+}
+
+function drawMapDistrictLandmarks() {
+  drawIsoLabel(148, 504, "Port-Rhu", "#86f7ff");
+  drawIsoLabel(316, 584, "Plage des Dames", "#f8efd0");
+  drawIsoLabel(470, 238, "Centre-ville", "#f8efd0");
+  drawIsoLabel(812, 220, "Route du Moulin", "#ffd8ef");
+  drawIsoLabel(1078, 566, "Parking parents", "#ffcf4e");
+
+  drawMapSmallLighthouse(226, 444);
+  drawMapTinySchool(164, 248);
+  drawMapHarborCranes(342, 514);
+  drawMapBeachUmbrellas(392, 574);
+  drawMapMiniMoulin(806, 232);
+  drawMapPhoneTower(1046, 246);
+  drawMapCats(932, 560);
 }
 
 function drawIsometricMapRoute() {
@@ -3023,22 +3091,253 @@ function drawMapRouteLine() {
   ctx.stroke();
 }
 
-function drawIsoTile(x, y, color) {
+function drawIsoTile(x, y, color, halfW = 64, halfH = 32) {
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.moveTo(x, y - 32);
-  ctx.lineTo(x + 64, y);
-  ctx.lineTo(x, y + 32);
-  ctx.lineTo(x - 64, y);
+  ctx.moveTo(x, y - halfH);
+  ctx.lineTo(x + halfW, y);
+  ctx.lineTo(x, y + halfH);
+  ctx.lineTo(x - halfW, y);
   ctx.closePath();
   ctx.fill();
   ctx.fillStyle = "rgba(0,0,0,0.12)";
   ctx.beginPath();
-  ctx.moveTo(x - 64, y);
-  ctx.lineTo(x, y + 32);
-  ctx.lineTo(x + 64, y);
-  ctx.lineTo(x, y + 44);
+  ctx.moveTo(x - halfW, y);
+  ctx.lineTo(x, y + halfH);
+  ctx.lineTo(x + halfW, y);
+  ctx.lineTo(x, y + halfH + 12);
   ctx.closePath();
+  ctx.fill();
+}
+
+function drawIsoRoad(points, color, width) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(5, 6, 9, 0.24)";
+  ctx.lineWidth = width + 8;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    if (index === 0) ctx.moveTo(point[0], point[1]);
+    else ctx.lineTo(point[0], point[1]);
+  });
+  ctx.stroke();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    if (index === 0) ctx.moveTo(point[0], point[1]);
+    else ctx.lineTo(point[0], point[1]);
+  });
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawIsoBuilding(x, y, variant) {
+  const w = 26 + variant * 8;
+  const h = 30 + variant * 10;
+  const color = ["#f2d1a2", "#d7a78d", "#dfe8ea"][variant % 3];
+  ctx.fillStyle = "rgba(5,6,9,0.18)";
+  ctx.fillRect(x - w / 2 + 6, y + 12, w + 8, 8);
+  ctx.fillStyle = color;
+  ctx.fillRect(x - w / 2, y - h, w, h);
+  ctx.fillStyle = "#c66b55";
+  ctx.beginPath();
+  ctx.moveTo(x - w / 2 - 4, y - h);
+  ctx.lineTo(x, y - h - 16);
+  ctx.lineTo(x + w / 2 + 4, y - h);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "#466a7c";
+  for (let i = 0; i < Math.max(1, variant + 1); i += 1) {
+    ctx.fillRect(x - w / 2 + 6 + i * 13, y - h + 12, 7, 9);
+  }
+}
+
+function drawIsoLabel(x, y, text, color) {
+  ctx.fillStyle = "rgba(6,10,16,0.68)";
+  const width = Math.max(82, text.length * 8 + 24);
+  ctx.fillRect(x - width / 2, y - 18, width, 30);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x - width / 2 + 3, y - 15, width - 6, 24);
+  ctx.fillStyle = color;
+  ctx.font = "900 12px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(text, x, y + 2);
+  ctx.textAlign = "left";
+}
+
+function drawMapBoat(x, y, color, scale = 1) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+  ctx.fillStyle = "rgba(5, 6, 9, 0.24)";
+  ctx.fillRect(-18, 23, 112, 5);
+  ctx.fillStyle = "#f8efd0";
+  ctx.fillRect(0, 0, 58, 16);
+  ctx.fillStyle = color;
+  ctx.fillRect(42, -12, 30, 14);
+  ctx.fillStyle = "#3a4d58";
+  ctx.beginPath();
+  ctx.moveTo(-12, 16);
+  ctx.lineTo(92, 16);
+  ctx.lineTo(74, 32);
+  ctx.lineTo(8, 32);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawMapSailboat(x, y, scale = 1) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+  ctx.fillStyle = "rgba(5, 6, 9, 0.24)";
+  ctx.fillRect(-24, 30, 90, 5);
+  ctx.fillStyle = "#3a4d58";
+  ctx.fillRect(-22, 18, 78, 14);
+  ctx.fillStyle = "#f8efd0";
+  ctx.fillRect(12, -42, 5, 62);
+  ctx.beginPath();
+  ctx.moveTo(18, -38);
+  ctx.lineTo(18, 14);
+  ctx.lineTo(62, 14);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "#ffcf4e";
+  ctx.beginPath();
+  ctx.moveTo(8, -28);
+  ctx.lineTo(8, 12);
+  ctx.lineTo(-28, 12);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawMapSmallLighthouse(x, y) {
+  ctx.fillStyle = "rgba(5,6,9,0.2)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 22, 36, 11, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#f8efd0";
+  ctx.fillRect(x - 15, y - 62, 30, 70);
+  ctx.fillStyle = "#d94c3f";
+  ctx.fillRect(x - 19, y - 44, 38, 10);
+  ctx.fillRect(x - 19, y - 18, 38, 10);
+  ctx.fillStyle = "#101820";
+  ctx.fillRect(x - 22, y - 76, 44, 14);
+  ctx.fillStyle = "rgba(255,207,78,0.65)";
+  ctx.beginPath();
+  ctx.moveTo(x + 20, y - 70);
+  ctx.lineTo(x + 86, y - 92);
+  ctx.lineTo(x + 86, y - 52);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawMapTinySchool(x, y) {
+  drawIsoTile(x, y + 20, "#b8b18e", 42, 22);
+  ctx.fillStyle = "#d6c08a";
+  ctx.fillRect(x - 34, y - 56, 68, 66);
+  ctx.fillStyle = "#8a4f3c";
+  ctx.beginPath();
+  ctx.moveTo(x - 42, y - 56);
+  ctx.lineTo(x, y - 88);
+  ctx.lineTo(x + 42, y - 56);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "#20313a";
+  ctx.fillRect(x - 8, y - 18, 16, 28);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 10px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("COLLEGE", x, y - 96);
+  ctx.textAlign = "left";
+}
+
+function drawMapHarborCranes(x, y) {
+  for (let i = 0; i < 2; i += 1) {
+    const px = x + i * 46;
+    ctx.fillStyle = "#20313a";
+    ctx.fillRect(px - 5, y - 58, 10, 58);
+    ctx.fillRect(px - 28, y - 62, 56, 8);
+    ctx.fillStyle = "#ffcf4e";
+    ctx.fillRect(px + 22, y - 54, 8, 30);
+  }
+  drawMapBoat(x - 40, y + 26, "#86f7ff", 0.58);
+  drawMapBoat(x + 38, y + 44, "#d94c3f", 0.48);
+}
+
+function drawMapBeachUmbrellas(x, y) {
+  for (let i = 0; i < 3; i += 1) {
+    const px = x + i * 36;
+    ctx.fillStyle = ["#ff5fb7", "#86f7ff", "#ffcf4e"][i];
+    ctx.beginPath();
+    ctx.moveTo(px - 18, y);
+    ctx.quadraticCurveTo(px, y - 28, px + 18, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#6f4f3c";
+    ctx.fillRect(px - 2, y, 4, 34);
+  }
+}
+
+function drawMapMiniMoulin(x, y) {
+  ctx.fillStyle = "rgba(5,6,9,0.22)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 34, 50, 14, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#20272f";
+  ctx.fillRect(x - 30, y - 62, 60, 82);
+  ctx.fillStyle = "#f8efd0";
+  ctx.fillRect(x - 6, y - 106, 12, 78);
+  ctx.fillRect(x - 52, y - 72, 104, 12);
+  ctx.fillStyle = "#ff4d56";
+  ctx.fillRect(x - 44, y - 116, 88, 12);
+  ctx.fillStyle = "#ffcf4e";
+  ctx.font = "900 11px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("LE MOULIN", x, y - 124);
+  ctx.textAlign = "left";
+}
+
+function drawMapPhoneTower(x, y) {
+  ctx.strokeStyle = "#101820";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(x, y - 80);
+  ctx.lineTo(x - 24, y + 6);
+  ctx.moveTo(x, y - 80);
+  ctx.lineTo(x + 24, y + 6);
+  ctx.moveTo(x - 14, y - 34);
+  ctx.lineTo(x + 14, y - 34);
+  ctx.stroke();
+  ctx.strokeStyle = "#86f7ff";
+  ctx.lineWidth = 3;
+  for (let r = 16; r <= 42; r += 13) {
+    ctx.beginPath();
+    ctx.arc(x, y - 82, r, -0.9, 0.9);
+    ctx.stroke();
+  }
+}
+
+function drawMapCats(x, y) {
+  ctx.fillStyle = "#101820";
+  ctx.beginPath();
+  ctx.arc(x - 22, y - 10, 18, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#8d5a32";
+  ctx.beginPath();
+  ctx.arc(x + 24, y - 8, 18, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#f8efd0";
+  ctx.beginPath();
+  ctx.arc(x + 15, y - 14, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#d94c3f";
+  ctx.beginPath();
+  ctx.arc(x + 32, y - 19, 7, 0, Math.PI * 2);
   ctx.fill();
 }
 
