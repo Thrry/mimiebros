@@ -152,6 +152,19 @@ const musicTracks = [
     bassWave: "sawtooth",
   },
   {
+    id: "victory",
+    name: "Fete",
+    beatMs: 86,
+    root: 48,
+    leadRoot: 72,
+    scale: [0, 2, 4, 7, 9, 12, 14, 16],
+    leadPattern: [0, 4, 7, 5, 4, 7, 9, 12, 7, 9, 12, 14, 12, 9, 7, 4],
+    bassPattern: [0, 0, 7, 7, 9, 9, 7, 7],
+    leadSteps: [0, 1, 2, 4, 6, 8, 9, 10, 12, 14, 15],
+    leadWave: "square",
+    bassWave: "triangle",
+  },
+  {
     name: "AYA",
     id: "aya",
     beatMs: 126,
@@ -6904,7 +6917,7 @@ function desiredMusicTrackId() {
   if (state === "capitalQuiz") return "parental";
   if (state === "parental") return "parental";
   if (state === "fighter") return "fighter";
-  if (state === "levelVictory") return "aya";
+  if (state === "podcastReward" || state === "levelVictory") return "victory";
   if (state === "ayaSpecial" || state === "showcaseVideo" || state === "won") return "aya";
   return "map";
 }
@@ -7011,6 +7024,19 @@ function playMusicStep() {
     if (step === 0 || step === 8) playNoise(now, 0.07, 0.95);
     if (step === 3 || step === 7 || step === 11 || step === 15) playNoise(now, 0.026, 0.36);
     if (step === 6 || step === 14) playTone(midiToFreq(track.root + 19), now, 0.045, "sawtooth", 0.2);
+  }
+
+  if (track.id === "victory") {
+    if (step === 0 || step === 8) {
+      playTone(midiToFreq(track.leadRoot + 12), now + 0.02, 0.11, "square", 0.42);
+      playTone(midiToFreq(track.leadRoot + 16), now + 0.04, 0.09, "triangle", 0.28);
+      playNoise(now, 0.075, 0.82);
+    }
+    if (step === 3 || step === 7 || step === 11 || step === 15) {
+      playNoise(now, 0.03, 0.42);
+      playTone(midiToFreq(track.leadRoot + 19), now, 0.045, "square", 0.2);
+    }
+    if (step % 4 === 2) playTone(midiToFreq(track.root + 24), now, 0.04, "triangle", 0.24);
   }
 
   if (step === 0 || step === 8) playNoise(now, 0.035, 0.7);
