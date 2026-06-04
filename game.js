@@ -313,6 +313,8 @@ const podcastReward = {
   host: "Maghla",
 };
 
+const SASS_REPLY_ADVANCE_FRAMES = 75;
+
 const mapNodes = [
   { id: "platform1", kind: "platform", title: "Mario 1", subtitle: "College", x: 170, y: 306, level: 1 },
   { id: "platform2", kind: "platform", title: "Mario 2", subtitle: "Famille", x: 612, y: 588, level: 2 },
@@ -1719,8 +1721,8 @@ function chooseSassReply() {
   const reply = round.options[sassSelected];
   sassScore += reply.points;
   sassFeedback = reply.feedback;
-  sassFeedbackTimer = 260;
-  sassAdvanceTimer = 210;
+  sassFeedbackTimer = SASS_REPLY_ADVANCE_FRAMES;
+  sassAdvanceTimer = SASS_REPLY_ADVANCE_FRAMES;
 }
 
 function updateParentalLevel() {
