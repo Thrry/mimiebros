@@ -198,15 +198,15 @@ const skincareHints = {
 };
 
 const skincareTargets = {
-  cleanser: { x: 640, y: 252, radius: 62, label: "visage" },
-  serum: { x: 620, y: 266, radius: 48, label: "joues" },
-  cream: { x: 660, y: 278, radius: 52, label: "creme" },
-  spf: { x: 642, y: 220, radius: 58, label: "front SPF" },
-  tint: { x: 640, y: 260, radius: 58, label: "teint" },
-  blush: { x: 604, y: 278, radius: 38, label: "joue blush" },
-  mascara: { x: 664, y: 240, radius: 36, label: "cils" },
-  gloss: { x: 640, y: 306, radius: 34, label: "gloss" },
-  straightener: { x: 548, y: 198, radius: 78, label: "meche a lisser" },
+  cleanser: { x: 640, y: 246, radius: 68, label: "visage entier" },
+  serum: { x: 614, y: 264, radius: 50, label: "joues" },
+  cream: { x: 664, y: 274, radius: 54, label: "creme" },
+  spf: { x: 642, y: 204, radius: 54, label: "front SPF" },
+  tint: { x: 640, y: 248, radius: 62, label: "teint" },
+  blush: { x: 602, y: 270, radius: 38, label: "joue blush" },
+  mascara: { x: 660, y: 232, radius: 36, label: "cils" },
+  gloss: { x: 640, y: 292, radius: 34, label: "gloss" },
+  straightener: { x: 548, y: 224, radius: 88, label: "longue meche" },
 };
 
 const parentalApps = [
@@ -5002,64 +5002,102 @@ function drawSkincareMirror() {
   ctx.fillRect(442, 105, 92, 310);
   ctx.fillRect(578, 90, 28, 340);
 
-  const cx = W / 2;
-  const cy = 288;
   const straightenerIndex = skincareProducts.findIndex((item) => item.id === "straightener");
   const hairIsStraight = straightenerIndex >= 0 && skincareStep > straightenerIndex;
-  ctx.fillStyle = "#7a5435";
-  ctx.beginPath();
-  ctx.ellipse(cx, cy - 8, 94, 142, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#5f3a24";
-  ctx.fillRect(cx - 86, cy - 78, 34, 176);
-  ctx.fillRect(cx + 52, cy - 78, 34, 176);
-  ctx.fillStyle = "#8a6240";
-  ctx.fillRect(cx - 70, cy - 112, 140, 66);
-  ctx.fillRect(cx - 62, cy - 70, 26, 170);
-  ctx.fillRect(cx + 36, cy - 70, 26, 170);
-  ctx.fillStyle = "#ffcf9d";
-  ctx.beginPath();
-  ctx.ellipse(cx, cy - 40, 62, 78, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#6f482c";
-  ctx.fillRect(cx - 62, cy - 104, 124, 28);
-  ctx.fillRect(cx - 70, cy - 76, 22, 116);
-  ctx.fillRect(cx + 48, cy - 76, 22, 116);
-  ctx.fillStyle = "#9b714c";
-  ctx.fillRect(cx - 36, cy - 100, 18, 28);
-  ctx.fillRect(cx - 12, cy - 106, 20, 34);
-  ctx.fillRect(cx + 14, cy - 100, 18, 28);
-  if (hairIsStraight) {
-    ctx.fillStyle = "rgba(248, 239, 208, 0.48)";
-    ctx.fillRect(cx - 58, cy - 54, 5, 144);
-    ctx.fillRect(cx - 42, cy - 70, 4, 150);
-    ctx.fillRect(cx + 40, cy - 70, 4, 150);
-    ctx.fillRect(cx + 56, cy - 54, 5, 144);
-  }
+  const portraitBaseY = 356;
+  drawPixelJohanneMirrorPortrait(W / 2, portraitBaseY, hairIsStraight);
 
   const layerColors = ["#9ce6ff", "#ffd35a", "#ffd8ef", "#f8efd0", "#f1b37c", "#ff7eb6", "#20272f", "#ff9ec5", "#86f7ff"];
   for (let i = 0; i < skincareStep; i += 1) {
     ctx.globalAlpha = 0.16 + i * 0.035;
     ctx.fillStyle = layerColors[i];
     ctx.beginPath();
-    ctx.ellipse(cx, cy - 35 + i * 2, 48 - i * 2, 58 - i * 3, 0, 0, Math.PI * 2);
+    ctx.ellipse(W / 2, 246 + i * 2, 50 - i * 2, 62 - i * 3, 0, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.globalAlpha = 1;
 
-  ctx.fillStyle = "#20272f";
-  ctx.fillRect(cx - 26, cy - 48, 8, 7);
-  ctx.fillRect(cx + 18, cy - 48, 8, 7);
-  ctx.fillStyle = "#b85c5c";
-  ctx.fillRect(cx - 12, cy - 14, 24, 4);
-
-  ctx.fillStyle = "#2f6f8f";
-  ctx.fillRect(cx - 54, cy + 54, 108, 82);
-  ctx.fillStyle = "#f8efd0";
-  ctx.fillRect(cx - 10, cy + 88, 20, 6);
-  ctx.fillRect(cx - 3, cy + 80, 6, 22);
+  drawPixelJohanneMirrorFeatures(W / 2, portraitBaseY);
 
   drawSkincareTargetAndCursor();
+}
+
+function drawPixelJohanneMirrorPortrait(cx, footY, hairIsStraight) {
+  const px = (x, y, w, h, color) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(Math.round(cx + x), Math.round(footY + y), w, h);
+  };
+
+  px(-114, -282, 228, 28, "#5a3925");
+  px(-132, -254, 264, 48, "#765032");
+  px(-146, -206, 64, 216, "#6d472d");
+  px(82, -206, 64, 216, "#6d472d");
+  px(-126, -178, 42, 198, "#8b623f");
+  px(84, -178, 42, 198, "#8b623f");
+  px(-92, -276, 184, 54, "#8b623f");
+  px(-58, -296, 48, 92, "#9d7048");
+  px(-8, -304, 16, 112, "#4c301f");
+  px(10, -296, 48, 92, "#9d7048");
+
+  if (hairIsStraight) {
+    px(-138, -226, 32, 238, "#7e5638");
+    px(-106, -214, 20, 234, "#9c7049");
+    px(86, -214, 20, 234, "#9c7049");
+    px(106, -226, 32, 238, "#7e5638");
+    px(-116, -206, 7, 226, "rgba(248, 239, 208, 0.45)");
+    px(110, -206, 7, 226, "rgba(248, 239, 208, 0.45)");
+  } else {
+    px(-142, -166, 18, 30, "#9d7048");
+    px(-130, -102, 20, 38, "#9d7048");
+    px(118, -154, 18, 30, "#9d7048");
+    px(104, -82, 22, 42, "#9d7048");
+  }
+
+  px(-58, -100, 116, 28, "#ffcf9d");
+  px(-88, -226, 176, 62, "#f4bc91");
+  px(-100, -202, 200, 88, "#ffcf9d");
+  px(-88, -114, 176, 48, "#f6bd90");
+  px(-66, -66, 132, 34, "#e7a978");
+  px(-46, -32, 92, 20, "#dc9669");
+  px(-22, -12, 44, 16, "#c98560");
+
+  px(-80, -232, 56, 20, "#8b623f");
+  px(24, -232, 56, 20, "#8b623f");
+  px(-104, -206, 28, 122, "#765032");
+  px(76, -206, 28, 122, "#765032");
+  px(-98, -178, 18, 150, "#9d7048");
+  px(80, -178, 18, 150, "#9d7048");
+
+  px(-78, 2, 156, 22, "#ffcf9d");
+  px(-142, 22, 284, 90, "#141b22");
+  px(-122, 38, 244, 78, "#202a33");
+  px(-98, 38, 196, 24, "#2f6f8f");
+  px(-20, 16, 40, 28, "#f4bc91");
+  px(-8, 44, 16, 42, "#f8efd0");
+
+  px(-150, 104, 300, 10, "rgba(0,0,0,0.22)");
+}
+
+function drawPixelJohanneMirrorFeatures(cx, py) {
+  const px = (x, y, w, h, color) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(Math.round(cx + x), Math.round(py + y), w, h);
+  };
+
+  px(-54, -180, 34, 7, "#6f482c");
+  px(20, -180, 34, 7, "#6f482c");
+  px(-48, -166, 16, 10, "#f8efd0");
+  px(32, -166, 16, 10, "#f8efd0");
+  px(-43, -164, 8, 8, "#8fc0d7");
+  px(35, -164, 8, 8, "#8fc0d7");
+  px(-40, -161, 4, 4, "#20272f");
+  px(38, -161, 4, 4, "#20272f");
+  px(-8, -146, 16, 36, "#e0a174");
+  px(-2, -114, 16, 6, "#c98560");
+  px(-22, -84, 44, 8, "#b85c5c");
+  px(-14, -78, 28, 6, "#f8b4a8");
+  px(-64, -132, 24, 10, "rgba(255, 126, 182, 0.34)");
+  px(40, -132, 24, 10, "rgba(255, 126, 182, 0.34)");
 }
 
 function drawSkincareShelf() {
