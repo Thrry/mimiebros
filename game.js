@@ -209,6 +209,12 @@ const skincareTargets = {
   straightener: { x: 548, y: 224, radius: 88, label: "longue meche" },
 };
 
+const momResponseOptions = [
+  { id: "soft", label: "Excuse calme", hint: "pour Maman", color: "#ffd8ef" },
+  { id: "adultBar", label: "Bar adultes", hint: "pour les copines", color: "#c8ff4e" },
+  { id: "noPhone", label: "Pas de selfie", hint: "selfie / danse", color: "#86f7ff" },
+];
+
 const parentalApps = [
   { id: "actu", name: "Actu", icon: "▶", color: "#ff5f6d" },
   { id: "whatsapp", name: "WhatsApp", icon: "WA", color: "#49c56b" },
@@ -677,7 +683,7 @@ function resetGame() {
   parentalFeedback = "";
   parentalFeedbackTimer = 0;
   parentalAlertTimer = 0;
-  momLane = 1;
+  momLane = 0;
   momRespect = 0;
   momCringe = 0;
   momSpawnTimer = 0;
@@ -1360,41 +1366,41 @@ function startParentalLevel() {
 
 function startMomPartyLevel() {
   state = "momParty";
-  momLane = 1;
+  momLane = 0;
   momRespect = 0;
   momCringe = 0;
-  momSpawnTimer = 280;
+  momSpawnTimer = 160;
   momGuests = [];
-  momFeedback = "Niveau 6: Maman arrive avec ses copines. Redirige-les avant le dancefloor.";
-  momFeedbackTimer = 220;
+  momFeedback = "Niveau 6: choisis la bonne excuse avant que Maman et ses copines entrent au Moulin.";
+  momFeedbackTimer = 260;
   updateHud();
   syncMusicToState();
 }
 
 function updateMomPartyLevel(dt) {
   if (input.leftPressed) momLane = Math.max(0, momLane - 1);
-  if (input.rightPressed) momLane = Math.min(3, momLane + 1);
+  if (input.rightPressed) momLane = Math.min(momResponseOptions.length - 1, momLane + 1);
   if (input.jumpPressed) redirectMomGuest();
 
   momSpawnTimer -= dt;
-  if (momSpawnTimer <= 0) {
+  if (momSpawnTimer <= 0 && momGuests.length < 3) {
     spawnMomGuest();
-    momSpawnTimer = Math.max(520, 980 - momRespect * 4);
+    momSpawnTimer = Math.max(680, 1180 - momRespect * 4);
   }
 
   for (const guest of momGuests) {
-    guest.y += guest.speed * dt;
+    guest.x += guest.speed * dt;
     guest.wobble += dt * 0.006;
-    if (!guest.missed && guest.y > 562) {
+    if (!guest.missed && guest.x > 906) {
       guest.missed = true;
       momCringe = Math.min(100, momCringe + guest.cringe);
       momFeedback = guest.type === "selfie"
         ? "Story avec maman devant le Moulin: cringe +++"
-        : "Une copine de maman dit 'on est jeunes aussi'.";
+        : "Quelqu'un passe le sas et dit 'on est jeunes aussi'.";
       momFeedbackTimer = 140;
     }
   }
-  momGuests = momGuests.filter((guest) => !guest.missed && guest.y < 660);
+  momGuests = momGuests.filter((guest) => !guest.missed && guest.x < 1020);
 
   if (momCringe >= 100) {
     momCringe = 45;
@@ -1418,18 +1424,16 @@ function updateMomPartyLevel(dt) {
 
 function spawnMomGuest() {
   const types = [
-    { type: "maman", label: "MAMAN", cringe: 18, speed: 0.12 },
-    { type: "copine", label: "COPINE", cringe: 14, speed: 0.145 },
-    { type: "selfie", label: "SELFIE", cringe: 22, speed: 0.105 },
-    { type: "dance", label: "DANSE", cringe: 16, speed: 0.16 },
+    { type: "maman", label: "MAMAN", cringe: 18, speed: 0.118, correct: 0 },
+    { type: "copine", label: "COPINE", cringe: 14, speed: 0.14, correct: 1 },
+    { type: "selfie", label: "SELFIE", cringe: 22, speed: 0.108, correct: 2 },
+    { type: "dance", label: "DANSE", cringe: 16, speed: 0.154, correct: 2 },
   ];
   const template = types[Math.floor(Math.random() * types.length)];
-  const lane = Math.floor(Math.random() * 4);
   momGuests.push({
     ...template,
-    lane,
-    x: 256 + lane * 246,
-    y: 92,
+    x: -92,
+    y: 314 + (Math.random() - 0.5) * 24,
     w: 92,
     h: 98,
     wobble: Math.random() * 6,
@@ -1439,18 +1443,32 @@ function spawnMomGuest() {
 
 function redirectMomGuest() {
   const candidate = momGuests
-    .filter((guest) => guest.lane === momLane && guest.y > 130 && guest.y < 585)
-    .sort((a, b) => b.y - a.y)[0];
+    .filter((guest) => guest.x > 246 && guest.x < 838)
+    .sort((a, b) => b.x - a.x)[0];
 
   if (!candidate) {
     momCringe = Math.min(100, momCringe + 4);
-    momFeedback = "Personne dans cette zone: Maman gagne du terrain.";
+    momFeedback = "Personne dans le sas: choisis une excuse quand quelqu'un arrive au milieu.";
     momFeedbackTimer = 90;
     return;
   }
 
+  const selected = momResponseOptions[momLane];
+  if (momLane !== candidate.correct) {
+    momCringe = Math.min(100, momCringe + (candidate.type === "maman" ? 13 : 9));
+    momRespect = Math.max(0, momRespect - 4);
+    momFeedback = {
+      maman: `${selected.label}: Maman repond 'mais je suis cool moi aussi'.`,
+      copine: `${selected.label}: la copine comprend de travers et avance.`,
+      selfie: `${selected.label}: telephone deja sorti, danger.`,
+      dance: `${selected.label}: debut de choregraphie non autorise.`,
+    }[candidate.type];
+    momFeedbackTimer = 155;
+    return;
+  }
+
   candidate.missed = true;
-  momRespect = Math.min(100, momRespect + (candidate.type === "maman" ? 18 : 14));
+  momRespect = Math.min(100, momRespect + (candidate.type === "maman" ? 20 : 15));
   momCringe = Math.max(0, momCringe - 5);
   score += 2;
   momFeedback = {
@@ -5430,28 +5448,37 @@ function drawMomPartyLevel() {
 
   ctx.fillStyle = "rgba(255,255,255,0.12)";
   for (let x = 40; x < W; x += 160) ctx.fillRect(x, 88 + Math.sin(x) * 20, 74, 5);
-  ctx.fillStyle = "#1f8fb5";
-  ctx.fillRect(0, 474, W, 84);
-  ctx.fillStyle = "rgba(255,255,255,0.3)";
-  for (let x = -20; x < W; x += 120) ctx.fillRect(x + Math.sin(performance.now() * 0.002 + x) * 8, 512, 58, 4);
+  ctx.fillStyle = "#1b2635";
+  ctx.fillRect(0, 488, W, 120);
+  ctx.fillStyle = "#2f3544";
+  for (let x = -20; x < W; x += 92) ctx.fillRect(x, 544, 58, 8);
   drawMoulinDisco(888);
 
-  const lanes = ["Entree", "Bar", "Dancefloor", "Selfie spot"];
-  for (let i = 0; i < 4; i += 1) {
-    const x = 170 + i * 246;
-    ctx.fillStyle = i === momLane ? "rgba(255, 207, 78, 0.24)" : "rgba(5, 6, 9, 0.22)";
-    ctx.fillRect(x, 120, 190, 470);
-    ctx.strokeStyle = i === momLane ? "#ffcf4e" : "rgba(248,239,208,0.24)";
-    ctx.lineWidth = i === momLane ? 5 : 2;
-    ctx.strokeRect(x + 4, 124, 182, 462);
-    ctx.fillStyle = "#f8efd0";
-    ctx.font = "900 15px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText(lanes[i], x + 95, 606);
-  }
+  ctx.fillStyle = "rgba(5, 6, 9, 0.34)";
+  ctx.fillRect(90, 286, 790, 188);
+  ctx.strokeStyle = "#f8efd0";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(96, 292, 778, 176);
+  ctx.fillStyle = "rgba(255, 207, 78, 0.18)";
+  ctx.fillRect(246, 300, 592, 152);
+  ctx.strokeStyle = "#ffcf4e";
+  ctx.setLineDash([12, 10]);
+  ctx.strokeRect(250, 304, 584, 144);
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 15px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("SAS DE NEGOCIATION", 542, 326);
+  ctx.fillStyle = "#b9c2bd";
+  ctx.font = "800 13px system-ui";
+  ctx.fillText("Quand quelqu'un est dans le cadre jaune, choisis la bonne phrase puis valide.", 542, 348);
+  ctx.fillStyle = "#ff5f67";
+  ctx.font = "900 14px system-ui";
+  ctx.fillText("DANCEFLOOR ADO - interdit aux mamans trop potes", 1004, 470);
 
   for (const guest of momGuests) drawMomGuest(guest);
   drawMomJohanneFilter();
+  drawMomResponseCards();
   drawMomPartyHud();
   drawMomPartyMessage();
   ctx.textAlign = "left";
@@ -5467,6 +5494,13 @@ function drawMomGuest(guest) {
 
   ctx.save();
   ctx.translate(x, y);
+  if (isMom) {
+    drawMomPortraitSprite(46, 48, guest.label);
+    ctx.restore();
+    ctx.textAlign = "left";
+    return;
+  }
+
   ctx.fillStyle = "rgba(0,0,0,0.25)";
   ctx.beginPath();
   ctx.ellipse(46, 86, 34, 10, 0, 0, Math.PI * 2);
@@ -5503,9 +5537,66 @@ function drawMomGuest(guest) {
   ctx.textAlign = "left";
 }
 
+function drawMomPortraitSprite(cx, cy, label) {
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + 40, 42, 11, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#5d6265";
+  ctx.fillRect(cx - 39, cy - 48, 78, 72);
+  ctx.fillStyle = "#8b9092";
+  ctx.fillRect(cx - 47, cy - 34, 22, 70);
+  ctx.fillRect(cx + 25, cy - 34, 22, 70);
+  ctx.fillStyle = "#c5c9c8";
+  ctx.fillRect(cx - 45, cy - 42, 14, 74);
+  ctx.fillRect(cx + 31, cy - 42, 14, 74);
+  ctx.fillRect(cx - 26, cy - 52, 18, 18);
+  ctx.fillRect(cx + 8, cy - 52, 18, 18);
+  ctx.fillStyle = "#3d302a";
+  ctx.fillRect(cx - 30, cy - 44, 20, 13);
+  ctx.fillRect(cx + 10, cy - 44, 18, 13);
+
+  ctx.fillStyle = "#f2b6a2";
+  ctx.beginPath();
+  ctx.roundRect(cx - 30, cy - 30, 60, 54, 18);
+  ctx.fill();
+  ctx.fillStyle = "#e58f92";
+  ctx.fillRect(cx - 27, cy - 4, 13, 8);
+  ctx.fillRect(cx + 14, cy - 4, 13, 8);
+  ctx.fillStyle = "#d9848a";
+  ctx.fillRect(cx - 5, cy - 10, 10, 17);
+  ctx.fillRect(cx - 9, cy + 9, 18, 4);
+  ctx.fillStyle = "#7b4d46";
+  ctx.fillRect(cx - 12, cy + 19, 24, 5);
+  ctx.fillStyle = "#eaa0a5";
+  ctx.fillRect(cx - 8, cy + 22, 16, 3);
+  ctx.fillStyle = "#3b2a23";
+  ctx.fillRect(cx - 22, cy - 16, 16, 5);
+  ctx.fillRect(cx + 6, cy - 16, 16, 5);
+  ctx.fillStyle = "#f8efd0";
+  ctx.fillRect(cx - 18, cy - 8, 8, 7);
+  ctx.fillRect(cx + 10, cy - 8, 8, 7);
+  ctx.fillStyle = "#5d523a";
+  ctx.fillRect(cx - 15, cy - 7, 4, 5);
+  ctx.fillRect(cx + 13, cy - 7, 4, 5);
+  ctx.fillStyle = "rgba(80,45,42,0.32)";
+  ctx.fillRect(cx - 16, cy - 28, 32, 3);
+  ctx.fillRect(cx - 18, cy - 23, 36, 2);
+
+  ctx.fillStyle = "#ff5fb7";
+  ctx.beginPath();
+  ctx.roundRect(cx - 36, cy + 26, 72, 42, 14);
+  ctx.fill();
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 10px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(label, cx, cy + 52);
+}
+
 function drawMomJohanneFilter() {
-  const x = 170 + momLane * 246 + 95;
-  const y = 548;
+  const x = 820;
+  const y = 438;
   ctx.save();
   ctx.translate(x, y);
   ctx.fillStyle = "rgba(0,0,0,0.28)";
@@ -5523,6 +5614,25 @@ function drawMomJohanneFilter() {
   ctx.textAlign = "center";
   ctx.fillText("NOPE", 0, 45);
   ctx.restore();
+  ctx.textAlign = "left";
+}
+
+function drawMomResponseCards() {
+  momResponseOptions.forEach((option, index) => {
+    const x = 214 + index * 292;
+    const selected = index === momLane;
+    ctx.fillStyle = selected ? option.color : "rgba(5, 6, 9, 0.78)";
+    ctx.fillRect(x, 558, 248, 76);
+    ctx.strokeStyle = selected ? "#f8efd0" : "rgba(248,239,208,0.28)";
+    ctx.lineWidth = selected ? 5 : 2;
+    ctx.strokeRect(x + 5, 563, 238, 66);
+    ctx.fillStyle = selected ? "#101820" : "#f8efd0";
+    ctx.font = "900 18px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(option.label, x + 124, 590);
+    ctx.font = "800 13px system-ui";
+    ctx.fillText(option.hint, x + 124, 614);
+  });
   ctx.textAlign = "left";
 }
 
@@ -5557,7 +5667,7 @@ function drawMomMeter(x, y, w, ratio, color, label) {
 function drawMomPartyMessage() {
   const text = momFeedbackTimer > 0
     ? momFeedback
-    : "< > / Q D: changer de zone   Espace / Entree: rediriger Maman ou une copine";
+    : "< > / Q D: choisir une phrase   Espace / Entree: l'envoyer dans le sas";
   ctx.fillStyle = "rgba(5, 6, 9, 0.8)";
   ctx.fillRect(228, 642, 824, 48);
   ctx.strokeStyle = "#ffcf4e";
