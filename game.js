@@ -168,6 +168,8 @@ const input = {
   leftPressed: false,
   right: false,
   rightPressed: false,
+  down: false,
+  downPressed: false,
   jump: false,
   jumpPressed: false,
   vannePressed: false,
@@ -213,6 +215,60 @@ const momResponseOptions = [
   { id: "soft", label: "Excuse calme", hint: "pour Maman", color: "#ffd8ef" },
   { id: "adultBar", label: "Bar adultes", hint: "pour les copines", color: "#c8ff4e" },
   { id: "noPhone", label: "Pas de selfie", hint: "selfie / danse", color: "#86f7ff" },
+];
+
+const europeCapitals = [
+  ["Albanie", "Tirana"],
+  ["Allemagne", "Berlin"],
+  ["Andorre", "Andorre-la-Vieille"],
+  ["Armenie", "Erevan"],
+  ["Autriche", "Vienne"],
+  ["Azerbaidjan", "Bakou"],
+  ["Belgique", "Bruxelles"],
+  ["Bielorussie", "Minsk"],
+  ["Bosnie-Herzegovine", "Sarajevo"],
+  ["Bulgarie", "Sofia"],
+  ["Chypre", "Nicosie"],
+  ["Croatie", "Zagreb"],
+  ["Danemark", "Copenhague"],
+  ["Espagne", "Madrid"],
+  ["Estonie", "Tallinn"],
+  ["Finlande", "Helsinki"],
+  ["France", "Paris"],
+  ["Georgie", "Tbilissi"],
+  ["Grece", "Athenes"],
+  ["Hongrie", "Budapest"],
+  ["Irlande", "Dublin"],
+  ["Islande", "Reykjavik"],
+  ["Italie", "Rome"],
+  ["Kazakhstan", "Astana"],
+  ["Kosovo", "Pristina"],
+  ["Lettonie", "Riga"],
+  ["Liechtenstein", "Vaduz"],
+  ["Lituanie", "Vilnius"],
+  ["Luxembourg", "Luxembourg"],
+  ["Macedoine du Nord", "Skopje"],
+  ["Malte", "La Valette"],
+  ["Moldavie", "Chisinau"],
+  ["Monaco", "Monaco"],
+  ["Montenegro", "Podgorica"],
+  ["Norvege", "Oslo"],
+  ["Pays-Bas", "Amsterdam"],
+  ["Pologne", "Varsovie"],
+  ["Portugal", "Lisbonne"],
+  ["Roumanie", "Bucarest"],
+  ["Royaume-Uni", "Londres"],
+  ["Russie", "Moscou"],
+  ["Saint-Marin", "Saint-Marin"],
+  ["Serbie", "Belgrade"],
+  ["Slovaquie", "Bratislava"],
+  ["Slovenie", "Ljubljana"],
+  ["Suede", "Stockholm"],
+  ["Suisse", "Berne"],
+  ["Tchequie", "Prague"],
+  ["Turquie", "Ankara"],
+  ["Ukraine", "Kyiv"],
+  ["Vatican", "Vatican"],
 ];
 
 const parentalApps = [
@@ -416,7 +472,7 @@ const level = {
     { x: 2810, y: FLOOR_Y - 104, w: 82, h: 104, kind: "pipe" },
     { x: 4560, y: FLOOR_Y - 92, w: 76, h: 92, kind: "pipe" },
     { x: 6220, y: FLOOR_Y - 116, w: 86, h: 116, kind: "pipe" },
-    { x: 7960, y: FLOOR_Y - 124, w: 90, h: 124, kind: "pipe" },
+    { x: 7960, y: FLOOR_Y - 124, w: 90, h: 124, kind: "pipe", magic: "capitalQuiz" },
     { x: 320, y: 530, w: 210, h: 28, kind: "stone" },
     { x: 660, y: 455, w: 190, h: 28, kind: "stone" },
     { x: 1040, y: 535, w: 230, h: 28, kind: "locker" },
@@ -635,6 +691,13 @@ let fighterDadJokeIndex = 0;
 let fighterVanneIndex = 0;
 let mangoSpeedTimer = 0;
 let godCodeBuffer = "";
+let capitalQuizQuestions = [];
+let capitalQuizIndex = 0;
+let capitalQuizSelected = 0;
+let capitalQuizScore = 0;
+let capitalQuizFeedback = "";
+let capitalQuizFeedbackTimer = 0;
+let capitalQuizDone = false;
 
 const player = {
   x: 96,
@@ -726,6 +789,13 @@ function resetGame() {
   fighterDadJokeIndex = 0;
   fighterVanneIndex = 0;
   mangoSpeedTimer = 0;
+  capitalQuizQuestions = [];
+  capitalQuizIndex = 0;
+  capitalQuizSelected = 0;
+  capitalQuizScore = 0;
+  capitalQuizFeedback = "";
+  capitalQuizFeedbackTimer = 0;
+  capitalQuizDone = false;
   Object.assign(player, {
     x: 96,
     y: 420,
@@ -831,6 +901,12 @@ function updateHud() {
     zoneEl.textContent = "Maman s'incruste";
     scoreEl.textContent = score;
     heartsEl.textContent = Math.max(0, 100 - momCringe);
+    return;
+  }
+  if (state === "capitalQuiz") {
+    zoneEl.textContent = "Quiz capitales";
+    scoreEl.textContent = score;
+    heartsEl.textContent = `${capitalQuizScore}/12`;
     return;
   }
   if (state === "sass") {
@@ -1480,6 +1556,86 @@ function redirectMomGuest() {
   momFeedbackTimer = 150;
 }
 
+function makeCapitalQuizQuestions() {
+  const shuffled = [...europeCapitals].sort(() => Math.random() - 0.5).slice(0, 12);
+  return shuffled.map(([country, capital]) => {
+    const wrong = europeCapitals
+      .filter((entry) => entry[1] !== capital)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3)
+      .map((entry) => entry[1]);
+    const options = [capital, ...wrong].sort(() => Math.random() - 0.5);
+    return { country, capital, options };
+  });
+}
+
+function startCapitalQuizLevel() {
+  state = "capitalQuiz";
+  capitalQuizQuestions = makeCapitalQuizQuestions();
+  capitalQuizIndex = 0;
+  capitalQuizSelected = 0;
+  capitalQuizScore = 0;
+  capitalQuizDone = false;
+  capitalQuizFeedback = "Tuyau magique: 9 bonnes reponses ouvrent le chemin vers AYA.";
+  capitalQuizFeedbackTimer = 190;
+  updateHud();
+  syncMusicToState();
+}
+
+function updateCapitalQuizLevel() {
+  if (input.leftPressed) capitalQuizSelected = Math.max(0, capitalQuizSelected - 1);
+  if (input.rightPressed) capitalQuizSelected = Math.min(3, capitalQuizSelected + 1);
+
+  if (input.jumpPressed) {
+    if (capitalQuizDone) {
+      if (capitalQuizScore >= 9) {
+        unlockedLevel = Math.max(unlockedLevel, 9);
+        mapSelected = 8;
+        state = "map";
+        score += 20;
+        addFloat("quiz gagne: direction AYA", player.x, player.y - 30, "#ffcf4e");
+      } else {
+        startPlatformLevel("platform3");
+        player.x = 7840;
+        player.y = spawnFloorY(player.x) - player.h;
+        cameraX = Math.max(0, player.x - W * 0.45);
+        addFloat("quiz rate: retente le tuyau", player.x, player.y - 24, "#ff7777");
+      }
+      input.leftPressed = false;
+      input.rightPressed = false;
+      input.jumpPressed = false;
+      updateHud();
+      syncMusicToState();
+      return;
+    }
+
+    const question = capitalQuizQuestions[capitalQuizIndex];
+    const answer = question.options[capitalQuizSelected];
+    if (answer === question.capital) {
+      capitalQuizScore += 1;
+      capitalQuizFeedback = `Oui: ${question.country} -> ${question.capital}.`;
+    } else {
+      capitalQuizFeedback = `Non: ${question.country}, c'est ${question.capital}.`;
+    }
+    capitalQuizFeedbackTimer = 145;
+    capitalQuizIndex += 1;
+    capitalQuizSelected = 0;
+    if (capitalQuizIndex >= capitalQuizQuestions.length) {
+      capitalQuizDone = true;
+      capitalQuizFeedback = capitalQuizScore >= 9
+        ? "Quiz valide: le tuyau ouvre l'avant-dernier niveau. Entree pour y aller."
+        : "Pas assez de capitales: Entree pour revenir au tuyau et retenter.";
+      capitalQuizFeedbackTimer = 9999;
+    }
+  }
+
+  if (capitalQuizFeedbackTimer > 0) capitalQuizFeedbackTimer -= 1;
+  input.leftPressed = false;
+  input.rightPressed = false;
+  input.jumpPressed = false;
+  updateHud();
+}
+
 function startSassLevel() {
   state = "sass";
   sassRound = 0;
@@ -2078,6 +2234,10 @@ function update(dt) {
     updateMomPartyLevel(dt);
     return;
   }
+  if (state === "capitalQuiz") {
+    updateCapitalQuizLevel();
+    return;
+  }
   if (state === "fighter") {
     updateFighterLevel(dt);
     return;
@@ -2276,10 +2436,13 @@ function update(dt) {
     }
   }
 
+  if (input.downPressed) tryEnterMagicPipe();
+
   if (playerReachedGoal()) finishPlatformLevel();
 
   if (player.invuln > 0) player.invuln -= 1;
   if (spawnCueTimer > 0) spawnCueTimer -= 1;
+  input.downPressed = false;
   if (levelOneTutorialTimer > 0) {
     levelOneTutorialTimer -= 1;
     if (activePlatformRun.id !== "platform1" || player.x > activePlatformRun.spawnX + 520) {
@@ -2292,6 +2455,30 @@ function update(dt) {
   cameraX += (player.x - cameraX - W * 0.42) * 0.12;
   cameraX = Math.max(0, Math.min(WORLD_W - W, cameraX));
   updateHud();
+}
+
+function currentMagicPipe() {
+  return level.platforms.find((platform) => (
+    platform.kind === "pipe"
+    && platform.magic === "capitalQuiz"
+    && inActivePlatformRun(platform, 80)
+  ));
+}
+
+function playerCanEnterMagicPipe(pipe) {
+  if (!pipe || !player.onGround) return false;
+  const center = player.x + player.w / 2;
+  const feet = player.y + player.h;
+  return center >= pipe.x - 12 && center <= pipe.x + pipe.w + 12 && Math.abs(feet - pipe.y) < 12;
+}
+
+function tryEnterMagicPipe() {
+  const pipe = currentMagicPipe();
+  if (!playerCanEnterMagicPipe(pipe)) return;
+  player.vx = 0;
+  player.vy = 0;
+  addFloat("tuyau magique!", pipe.x + pipe.w / 2, pipe.y - 20, "#c98cff");
+  startCapitalQuizLevel();
 }
 
 function bumpPlatformBlock(platform) {
@@ -2426,6 +2613,10 @@ function draw() {
     drawMomPartyLevel();
     return;
   }
+  if (state === "capitalQuiz") {
+    drawCapitalQuizLevel();
+    return;
+  }
   if (state === "fighter") {
     drawFighterLevel();
     return;
@@ -2476,6 +2667,7 @@ function draw() {
   drawPlayer();
   drawSpawnCue();
   drawCareEffect();
+  drawMagicPipePrompt();
   drawFloatingTexts();
 
   ctx.restore();
@@ -4110,22 +4302,51 @@ function drawQuestionBlock(p, chapter) {
 }
 
 function drawPipe(p, chapter) {
-  ctx.fillStyle = "#183d30";
+  const magic = p.magic === "capitalQuiz";
+  ctx.fillStyle = magic ? "#291a45" : "#183d30";
   ctx.fillRect(p.x + 6, p.y + 18, p.w - 12, p.h - 18);
-  ctx.fillStyle = "#2a9b62";
+  ctx.fillStyle = magic ? "#7a4fcf" : "#2a9b62";
   ctx.fillRect(p.x + 10, p.y + 24, p.w - 20, p.h - 24);
-  ctx.fillStyle = "#36c878";
+  ctx.fillStyle = magic ? "#c98cff" : "#36c878";
   ctx.fillRect(p.x - 8, p.y, p.w + 16, 28);
-  ctx.fillStyle = "#1d6b46";
+  ctx.fillStyle = magic ? "#4b2f8f" : "#1d6b46";
   ctx.fillRect(p.x - 8, p.y + 22, p.w + 16, 12);
   ctx.fillStyle = "rgba(255,255,255,0.22)";
   ctx.fillRect(p.x + 18, p.y + 28, 10, p.h - 34);
-  ctx.strokeStyle = "#0d2b22";
+  ctx.strokeStyle = magic ? "#f8efd0" : "#0d2b22";
   ctx.lineWidth = 4;
   ctx.strokeRect(p.x - 8, p.y, p.w + 16, 34);
   ctx.strokeRect(p.x + 6, p.y + 18, p.w - 12, p.h - 18);
   ctx.fillStyle = chapter.tint;
   ctx.fillRect(p.x - 6, p.y + 2, p.w + 12, p.h - 2);
+  if (magic) {
+    const t = performance.now() * 0.004;
+    ctx.fillStyle = "#ffcf4e";
+    for (let i = 0; i < 5; i += 1) {
+      const sx = p.x - 22 + i * 31;
+      const sy = p.y - 22 + Math.sin(t + i) * 7;
+      ctx.fillRect(sx, sy, 7, 7);
+      ctx.fillRect(sx + 2, sy - 4, 3, 15);
+      ctx.fillRect(sx - 4, sy + 2, 15, 3);
+    }
+  }
+}
+
+function drawMagicPipePrompt() {
+  const pipe = currentMagicPipe();
+  if (!playerCanEnterMagicPipe(pipe)) return;
+  const x = pipe.x + pipe.w / 2;
+  const y = pipe.y - 74 + Math.sin(performance.now() * 0.006) * 4;
+  ctx.fillStyle = "rgba(5, 6, 9, 0.84)";
+  ctx.fillRect(x - 138, y - 26, 276, 48);
+  ctx.strokeStyle = "#c98cff";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(x - 132, y - 20, 264, 36);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 15px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("↓ / S: quiz capitales d'Europe", x, y + 4);
+  ctx.textAlign = "left";
 }
 
 function drawHazards() {
@@ -5680,6 +5901,142 @@ function drawMomPartyMessage() {
   ctx.textAlign = "left";
 }
 
+function drawCapitalQuizLevel() {
+  ctx.clearRect(0, 0, W, H);
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#09162f");
+  bg.addColorStop(0.52, "#173b5f");
+  bg.addColorStop(1, "#0f1b24");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = "rgba(134, 247, 255, 0.1)";
+  for (let x = 50; x < W; x += 150) {
+    ctx.fillRect(x, 110 + Math.sin(x * 0.03) * 28, 88, 5);
+  }
+  drawPixelEuropeMap(82, 150);
+
+  ctx.fillStyle = "rgba(5, 6, 9, 0.82)";
+  ctx.fillRect(346, 56, 842, 112);
+  ctx.strokeStyle = "#c98cff";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(354, 64, 826, 96);
+  ctx.fillStyle = "#ffcf4e";
+  ctx.font = "900 28px system-ui";
+  ctx.fillText("Tuyau magique: capitales d'Europe", 382, 104);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "800 16px system-ui";
+  ctx.fillText("12 questions tirees du pool complet. Objectif: 9 bonnes reponses.", 382, 136);
+
+  ctx.fillStyle = "rgba(248, 239, 208, 0.12)";
+  ctx.fillRect(328, 204, 884, 224);
+  ctx.strokeStyle = "#f8efd0";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(336, 212, 868, 208);
+
+  if (capitalQuizDone) {
+    const won = capitalQuizScore >= 9;
+    ctx.fillStyle = won ? "#c8ff4e" : "#ff7777";
+    ctx.font = "900 44px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(won ? "PASSEPORT AYA VALIDE" : "PAS ASSEZ DE CAPITALES", 770, 292);
+    ctx.fillStyle = "#f8efd0";
+    ctx.font = "900 22px system-ui";
+    ctx.fillText(`${capitalQuizScore}/12 bonnes reponses`, 770, 336);
+    ctx.font = "800 17px system-ui";
+    ctx.fillText(won ? "Entree: aller au Special AYA" : "Entree: revenir au tuyau magique", 770, 374);
+  } else {
+    const question = capitalQuizQuestions[capitalQuizIndex] || capitalQuizQuestions[0];
+    ctx.fillStyle = "#86f7ff";
+    ctx.font = "900 20px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(`Question ${capitalQuizIndex + 1}/12`, 770, 250);
+    ctx.fillStyle = "#f8efd0";
+    ctx.font = "900 36px system-ui";
+    ctx.fillText(`Capitale de ${question.country} ?`, 770, 312);
+    ctx.fillStyle = "#b9c2bd";
+    ctx.font = "800 15px system-ui";
+    ctx.fillText("< > / Q D: choisir   Espace / Entree: valider   1-4: reponse directe", 770, 372);
+
+    question.options.forEach((option, index) => {
+      const x = 360 + (index % 2) * 430;
+      const y = 464 + Math.floor(index / 2) * 88;
+      const selected = index === capitalQuizSelected;
+      ctx.fillStyle = selected ? "#ffcf4e" : "rgba(5, 6, 9, 0.76)";
+      ctx.fillRect(x, y, 388, 64);
+      ctx.strokeStyle = selected ? "#f8efd0" : "rgba(248,239,208,0.34)";
+      ctx.lineWidth = selected ? 5 : 2;
+      ctx.strokeRect(x + 5, y + 5, 378, 54);
+      ctx.fillStyle = selected ? "#101820" : "#f8efd0";
+      ctx.font = "900 20px system-ui";
+      ctx.textAlign = "left";
+      ctx.fillText(`${index + 1}. ${option}`, x + 28, y + 40);
+    });
+  }
+
+  drawCapitalQuizHud();
+  drawCapitalQuizFeedback();
+  ctx.textAlign = "left";
+}
+
+function drawPixelEuropeMap(x, y) {
+  const cells = [
+    [3, 0, 2, 1], [2, 1, 4, 1], [6, 1, 2, 2], [1, 2, 5, 2],
+    [5, 3, 4, 2], [0, 4, 4, 2], [4, 5, 5, 2], [8, 6, 3, 2],
+    [3, 7, 4, 2], [6, 8, 3, 3], [1, 9, 3, 2], [10, 9, 2, 2],
+    [4, 11, 2, 2], [7, 12, 2, 2],
+  ];
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = "rgba(5, 6, 9, 0.42)";
+  ctx.fillRect(0, 0, 232, 330);
+  ctx.strokeStyle = "rgba(248,239,208,0.26)";
+  ctx.strokeRect(6, 6, 220, 318);
+  cells.forEach((cell, index) => {
+    const [cx, cy, cw, ch] = cell;
+    ctx.fillStyle = ["#4fbf9f", "#c8ff4e", "#86f7ff", "#ffcf4e"][index % 4];
+    ctx.globalAlpha = 0.78;
+    ctx.fillRect(28 + cx * 13, 36 + cy * 18, cw * 13, ch * 18);
+  });
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 13px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("EUROPE", 116, 302);
+  ctx.restore();
+  ctx.textAlign = "left";
+}
+
+function drawCapitalQuizHud() {
+  ctx.fillStyle = "rgba(5, 6, 9, 0.78)";
+  ctx.fillRect(72, 510, 220, 112);
+  ctx.strokeStyle = "#86f7ff";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(80, 518, 204, 96);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 16px system-ui";
+  ctx.fillText("Score quiz", 104, 550);
+  ctx.fillStyle = "#ffcf4e";
+  ctx.font = "900 42px system-ui";
+  ctx.fillText(`${capitalQuizScore}/12`, 104, 596);
+}
+
+function drawCapitalQuizFeedback() {
+  const text = capitalQuizFeedbackTimer > 0
+    ? capitalQuizFeedback
+    : "Le tuyau attend une capitale propre.";
+  ctx.fillStyle = "rgba(5, 6, 9, 0.82)";
+  ctx.fillRect(344, 646, 856, 46);
+  ctx.strokeStyle = "#c98cff";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(350, 652, 844, 34);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 16px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(text, 772, 675);
+  ctx.textAlign = "left";
+}
+
 function drawParentalLevel() {
   ctx.clearRect(0, 0, W, H);
   const bg = ctx.createLinearGradient(0, 0, 0, H);
@@ -5930,6 +6287,7 @@ function desiredMusicTrackId() {
   if (state === "skincare" || state === "productHunt") return "skincare";
   if (state === "sass") return "daron";
   if (state === "momParty") return "fighter";
+  if (state === "capitalQuiz") return "parental";
   if (state === "parental") return "parental";
   if (state === "fighter") return "fighter";
   if (state === "levelVictory") return "aya";
@@ -6095,6 +6453,10 @@ function setKey(key, value) {
     if (value && !input.right) input.rightPressed = true;
     input.right = value;
   }
+  if (key === "ArrowDown" || key === "s") {
+    if (value && !input.down) input.downPressed = true;
+    input.down = value;
+  }
   if (key === "ArrowUp" || key === "w" || key === "z" || key === " ") {
     if (value && !input.jump) input.jumpPressed = true;
     input.jump = value;
@@ -6104,16 +6466,21 @@ function setKey(key, value) {
 window.addEventListener("keydown", (event) => {
   startMusic();
   handleGodCodeKey(event.key);
-  if (["ArrowLeft", "ArrowRight", "ArrowUp", " ", "a", "q", "d", "w", "z"].includes(event.key)) {
+  if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " ", "a", "q", "d", "w", "z", "s"].includes(event.key)) {
     event.preventDefault();
     setKey(event.key, true);
+  }
+  if (state === "capitalQuiz" && /^[1-4]$/.test(event.key)) {
+    event.preventDefault();
+    capitalQuizSelected = Number(event.key) - 1;
+    input.jumpPressed = true;
   }
   if ((event.key === "x" || event.key === "X") && state === "fighter") {
     event.preventDefault();
     input.vannePressed = true;
   }
-  if (event.key === "Enter" && (state === "map" || state === "podcastReward" || state === "levelVictory" || state === "skincare" || state === "productHunt" || state === "sass" || state === "momParty" || state === "parental" || state === "fighter" || state === "ayaSpecial" || state === "showcaseVideo")) input.jumpPressed = true;
-  if (event.key === "Enter" && state !== "playing" && state !== "map" && state !== "podcastReward" && state !== "levelVictory" && state !== "skincare" && state !== "productHunt" && state !== "sass" && state !== "momParty" && state !== "parental" && state !== "fighter" && state !== "ayaSpecial" && state !== "showcaseVideo") resetGame();
+  if (event.key === "Enter" && (state === "map" || state === "podcastReward" || state === "levelVictory" || state === "skincare" || state === "productHunt" || state === "sass" || state === "momParty" || state === "capitalQuiz" || state === "parental" || state === "fighter" || state === "ayaSpecial" || state === "showcaseVideo")) input.jumpPressed = true;
+  if (event.key === "Enter" && state !== "playing" && state !== "map" && state !== "podcastReward" && state !== "levelVictory" && state !== "skincare" && state !== "productHunt" && state !== "sass" && state !== "momParty" && state !== "capitalQuiz" && state !== "parental" && state !== "fighter" && state !== "ayaSpecial" && state !== "showcaseVideo") resetGame();
 });
 
 window.addEventListener("keyup", (event) => setKey(event.key, false));
