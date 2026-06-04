@@ -349,7 +349,7 @@ const platformRuns = {
     enemySpeed: 1.12,
     nextLevel: 3,
     nodeIndex: 1,
-    quest: "Side quest: garder du tel et de la batterie pour filmer AYA.",
+    quest: "Objectif: sortir avec les amis aux Dames. Bonus: remplir la trousse skin care.",
   },
   platform3: {
     id: "platform3",
@@ -545,6 +545,17 @@ const level = {
     { x: 8500, y: 350, w: 42, h: 28, value: 15, taken: false },
     { x: 9020, y: 464, w: 42, h: 28, value: 15, taken: false },
     { x: 9380, y: 310, w: 42, h: 28, value: 15, taken: false },
+  ],
+  skincarePickups: [
+    { id: "cleanser", x: 3360, y: FLOOR_Y - 98, w: 42, h: 62, taken: false },
+    { id: "serum", x: 3708, y: 406, w: 42, h: 62, taken: false },
+    { id: "cream", x: 4070, y: FLOOR_Y - 98, w: 42, h: 62, taken: false },
+    { id: "spf", x: 4490, y: 474, w: 42, h: 62, taken: false },
+    { id: "tint", x: 4930, y: 395, w: 42, h: 62, taken: false },
+    { id: "blush", x: 5360, y: 482, w: 42, h: 62, taken: false },
+    { id: "mascara", x: 5760, y: 336, w: 42, h: 62, taken: false },
+    { id: "gloss", x: 6120, y: 444, w: 42, h: 62, taken: false },
+    { id: "straightener", x: 6288, y: 350, w: 64, h: 52, taken: false },
   ],
   powerups: [],
   enemies: [
@@ -818,6 +829,7 @@ function resetGame() {
   for (const stop of level.careStops) stop.used = false;
   for (const bottle of level.clubMates) bottle.taken = false;
   for (const batteryPack of level.batteries) batteryPack.taken = false;
+  for (const pickup of level.skincarePickups) pickup.taken = false;
   level.powerups = [];
   for (const platform of level.platforms) platform.used = false;
   floatingTexts = [];
@@ -834,6 +846,7 @@ function resetGame() {
 
 function startPlatformLevel(runId = "platform1") {
   activePlatformRun = platformRuns[runId] || platformRuns.platform1;
+  syncSkincarePickupsFromCollection();
   const spawnX = activePlatformRun.spawnX || activePlatformRun.startX;
   state = "playing";
   cameraX = Math.max(0, Math.min(WORLD_W - W, spawnX - W * 0.32));
@@ -1078,6 +1091,24 @@ function currentPlatformChapter() {
 function inActivePlatformRun(item, pad = 80) {
   const itemW = item.w || item.r * 2 || 0;
   return item.x + itemW >= activePlatformRun.startX - pad && item.x <= activePlatformRun.goalX + pad;
+}
+
+function skincareProductForId(id) {
+  return skincareProducts.find((product) => product.id === id) || skincareProducts[0];
+}
+
+function syncSkincarePickupsFromCollection() {
+  for (const pickup of level.skincarePickups) {
+    pickup.taken = productHuntCollected.includes(pickup.id);
+  }
+}
+
+function skincareCollectionComplete() {
+  return skincareProducts.every((product) => productHuntCollected.includes(product.id));
+}
+
+function missingSkincareProducts() {
+  return skincareProducts.filter((product) => !productHuntCollected.includes(product.id));
 }
 
 function spawnFloorY(x) {
@@ -1426,7 +1457,14 @@ function finishSkincareGame() {
 }
 
 function startSkincareLevel() {
-  startProductHuntLevel();
+  if (!skincareCollectionComplete()) {
+    const missing = missingSkincareProducts().length;
+    mapSelected = 1;
+    startPlatformLevel("platform2");
+    addFloat(`trousse incomplete: ${missing} a choper`, player.x + 120, player.y - 28, "#ffd8ef");
+    return;
+  }
+  startSkincareGame(null, "level2");
 }
 
 function startParentalLevel() {
@@ -2169,6 +2207,8 @@ function updateMap() {
 function activateGodMode() {
   unlockedLevel = Math.max(...mapNodes.map((node) => node.level));
   mapSelected = 0;
+  productHuntCollected = skincareProducts.map((product) => product.id);
+  syncSkincarePickupsFromCollection();
   state = "map";
   careTimer = 0;
   careMode = "";
@@ -2430,6 +2470,20 @@ function update(dt) {
     }
   }
 
+  for (const pickup of level.skincarePickups) {
+    if (!inActivePlatformRun(pickup, 50)) continue;
+    if (pickup.taken) continue;
+    if (rectsOverlap(player, pickup)) {
+      const product = skincareProductForId(pickup.id);
+      pickup.taken = true;
+      if (!productHuntCollected.includes(product.id)) productHuntCollected.push(product.id);
+      score += 2;
+      player.vy = Math.min(player.vy, -6);
+      addFloat(`${product.name} dans la trousse`, pickup.x + pickup.w / 2, pickup.y, "#ffd8ef");
+      updateHud();
+    }
+  }
+
   for (const stop of level.careStops) {
     if (!inActivePlatformRun(stop, 40)) continue;
     if (stop.used || !player.onGround) continue;
@@ -2671,6 +2725,7 @@ function draw() {
   drawMemeTokens();
   drawClubMates();
   drawBatteries();
+  drawSkincarePickups();
   drawEnemies();
   drawGoal();
   drawPlayer();
@@ -2682,6 +2737,7 @@ function draw() {
   ctx.restore();
   drawVignette();
   if (state === "playing") drawPlatformQuest();
+  if (state === "playing") drawSkincareCollectionHud();
   if (state === "playing") drawLevelOneTutorial();
 }
 
@@ -4778,6 +4834,80 @@ function drawBatteries() {
     ctx.fillRect(x + 23, y - 10, 4, 8);
     ctx.textAlign = "left";
   }
+}
+
+function drawSkincarePickups() {
+  const t = performance.now() * 0.004;
+  for (const pickup of level.skincarePickups) {
+    if (!inActivePlatformRun(pickup, 50)) continue;
+    if (pickup.taken) continue;
+    const product = skincareProductForId(pickup.id);
+    const x = pickup.x + pickup.w / 2;
+    const y = pickup.y + pickup.h / 2 + Math.sin(t + pickup.x * 0.04) * 5;
+
+    ctx.fillStyle = "rgba(10, 14, 18, 0.24)";
+    ctx.beginPath();
+    ctx.ellipse(x, pickup.y + pickup.h + 10, 28, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.sin(t * 1.4 + pickup.x) * 0.08);
+    drawProductPickupIcon(product, 0, 0, product.id === "straightener" ? 0.78 : 0.82);
+    ctx.restore();
+
+    ctx.fillStyle = "rgba(5, 6, 9, 0.76)";
+    ctx.fillRect(x - 42, pickup.y - 28, 84, 21);
+    ctx.fillStyle = product.color === "#20272f" ? "#f8efd0" : product.color;
+    ctx.font = "900 10px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(product.name, x, pickup.y - 13);
+    ctx.textAlign = "left";
+  }
+}
+
+function drawSkincareCollectionHud() {
+  if (activePlatformRun.id !== "platform2" && productHuntCollected.length === 0) return;
+  const x = W - 246;
+  const y = 126;
+  const panelW = 212;
+  const panelH = 142;
+  const complete = skincareCollectionComplete();
+
+  ctx.save();
+  ctx.fillStyle = "rgba(5, 6, 9, 0.76)";
+  ctx.fillRect(x, y, panelW, panelH);
+  ctx.strokeStyle = complete ? "#c8ff4e" : "#ffd8ef";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(x + 5, y + 5, panelW - 10, panelH - 10);
+  ctx.fillStyle = complete ? "#c8ff4e" : "#ffd8ef";
+  ctx.font = "900 15px system-ui";
+  ctx.fillText(`Trousse ${productHuntCollected.length}/${skincareProducts.length}`, x + 18, y + 28);
+
+  skincareProducts.forEach((product, index) => {
+    const col = index % 3;
+    const row = Math.floor(index / 3);
+    const iconX = x + 36 + col * 58;
+    const iconY = y + 58 + row * 30;
+    const collected = productHuntCollected.includes(product.id);
+    ctx.globalAlpha = collected ? 1 : 0.34;
+    drawProductPickupIcon(product, iconX, iconY, 0.32);
+    ctx.globalAlpha = 1;
+    if (!collected) {
+      ctx.fillStyle = "#f8efd0";
+      ctx.font = "900 14px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText("?", iconX, iconY + 5);
+      ctx.textAlign = "left";
+    }
+  });
+
+  ctx.fillStyle = "#dfe8ea";
+  ctx.font = "800 11px system-ui";
+  ctx.fillText(complete ? "miroir debloque" : "a choper dans Mario 2", x + 18, y + 126);
+  ctx.restore();
+  ctx.textAlign = "left";
+  ctx.globalAlpha = 1;
 }
 
 function drawEnemies() {
