@@ -547,6 +547,12 @@ let skincareAim = 0.5;
 let skincareAimDir = 1;
 let skincareStyle = 0;
 let skincareMistakes = 0;
+let productHuntX = W / 2;
+let productHuntItems = [];
+let productHuntCollected = [];
+let productHuntSpawnTimer = 0;
+let productHuntFeedback = "";
+let productHuntFeedbackTimer = 0;
 let parentalSelected = 0;
 let parentalVideos = 0;
 let parentalCodes = 0;
@@ -634,6 +640,12 @@ function resetGame() {
   skincareAimDir = 1;
   skincareStyle = 0;
   skincareMistakes = 0;
+  productHuntX = W / 2;
+  productHuntItems = [];
+  productHuntCollected = [];
+  productHuntSpawnTimer = 0;
+  productHuntFeedback = "";
+  productHuntFeedbackTimer = 0;
   parentalSelected = 0;
   parentalVideos = 0;
   parentalCodes = 0;
@@ -771,6 +783,12 @@ function updateHud() {
     zoneEl.textContent = "Make-up";
     scoreEl.textContent = score;
     heartsEl.textContent = player.hearts;
+    return;
+  }
+  if (state === "productHunt") {
+    zoneEl.textContent = "Trousse";
+    scoreEl.textContent = score;
+    heartsEl.textContent = `${productHuntCollected.length}/${skincareProducts.length}`;
     return;
   }
   if (state === "parental") {
@@ -1126,6 +1144,89 @@ function startSkincareGame(stop, mode = "road") {
   input.jumpPressed = false;
 }
 
+function startProductHuntLevel() {
+  state = "productHunt";
+  productHuntX = W / 2;
+  productHuntItems = [];
+  productHuntCollected = [];
+  productHuntSpawnTimer = 0;
+  productHuntFeedback = "Attrape tous les produits avant de passer au miroir.";
+  productHuntFeedbackTimer = 180;
+  input.left = false;
+  input.right = false;
+  input.jump = false;
+  input.leftPressed = false;
+  input.rightPressed = false;
+  input.jumpPressed = false;
+  updateHud();
+  syncMusicToState();
+}
+
+function updateProductHuntLevel(dt) {
+  if (input.left) productHuntX -= 7.4;
+  if (input.right) productHuntX += 7.4;
+  productHuntX = Math.max(120, Math.min(W - 120, productHuntX));
+
+  productHuntSpawnTimer -= dt;
+  if (productHuntSpawnTimer <= 0 && productHuntItems.length < 4) {
+    spawnProductHuntItem();
+    productHuntSpawnTimer = Math.max(310, 720 - productHuntCollected.length * 32);
+  }
+
+  const bag = { x: productHuntX - 72, y: 566, w: 144, h: 86 };
+  for (const item of productHuntItems) {
+    item.y += item.vy * dt;
+    item.spin += dt * 0.006;
+    item.x += Math.sin(item.spin) * 0.55;
+
+    if (!item.taken && rectsOverlap(bag, { x: item.x - 28, y: item.y - 30, w: 56, h: 60 })) {
+      item.taken = true;
+      if (!productHuntCollected.includes(item.product.id)) {
+        productHuntCollected.push(item.product.id);
+        score += 1;
+        productHuntFeedback = `${item.product.name} dans la trousse.`;
+        productHuntFeedbackTimer = 110;
+      }
+    }
+
+    if (!item.taken && item.y > H + 40) {
+      item.taken = true;
+      productHuntFeedback = `${item.product.name} rate: il faut tout choper.`;
+      productHuntFeedbackTimer = 100;
+    }
+  }
+  productHuntItems = productHuntItems.filter((item) => !item.taken);
+
+  if (productHuntCollected.length >= skincareProducts.length) {
+    productHuntFeedback = "Trousse complete: miroir debloque.";
+    startSkincareGame(null, "level2");
+    return;
+  }
+
+  if (productHuntFeedbackTimer > 0) productHuntFeedbackTimer -= 1;
+  input.leftPressed = false;
+  input.rightPressed = false;
+  input.jumpPressed = false;
+  updateHud();
+}
+
+function spawnProductHuntItem() {
+  const fallingIds = productHuntItems.map((item) => item.product.id);
+  const missing = skincareProducts.filter((product) => (
+    !productHuntCollected.includes(product.id) && !fallingIds.includes(product.id)
+  ));
+  const pool = missing.length > 0 ? missing : skincareProducts.filter((product) => !fallingIds.includes(product.id));
+  const product = pool[Math.floor(Math.random() * pool.length)] || skincareProducts[0];
+  productHuntItems.push({
+    product,
+    x: 120 + Math.random() * (W - 240),
+    y: -50,
+    vy: 0.16 + Math.random() * 0.08 + productHuntCollected.length * 0.006,
+    spin: Math.random() * Math.PI * 2,
+    taken: false,
+  });
+}
+
 function updateSkincareGame() {
   const aimSpeed = skincareMode === "level2" ? 0.015 : 0.011;
   skincareAim += skincareAimDir * aimSpeed;
@@ -1215,7 +1316,7 @@ function finishSkincareGame() {
 }
 
 function startSkincareLevel() {
-  startSkincareGame(null, "level2");
+  startProductHuntLevel();
 }
 
 function startParentalLevel() {
@@ -1919,6 +2020,10 @@ function update(dt) {
     updateSkincareGame();
     return;
   }
+  if (state === "productHunt") {
+    updateProductHuntLevel(dt);
+    return;
+  }
   if (state === "sass") {
     updateSassLevel();
     return;
@@ -2261,6 +2366,10 @@ function draw() {
   }
   if (state === "skincare") {
     drawSkincareGame();
+    return;
+  }
+  if (state === "productHunt") {
+    drawProductHuntLevel();
     return;
   }
   if (state === "sass") {
@@ -4725,6 +4834,137 @@ function drawSkincareGame() {
   drawSkincareControls();
 }
 
+function drawProductHuntLevel() {
+  ctx.clearRect(0, 0, W, H);
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#7fc9e6");
+  bg.addColorStop(0.5, "#f4d4e2");
+  bg.addColorStop(1, "#7b4f88");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = "rgba(255,255,255,0.18)";
+  for (let x = 70; x < W; x += 180) ctx.fillRect(x, 115 + Math.sin(x) * 24, 86, 5);
+  ctx.fillStyle = "#d2b089";
+  ctx.fillRect(0, 608, W, 112);
+  ctx.fillStyle = "#8a6548";
+  for (let x = 0; x < W; x += 96) ctx.fillRect(x, 608, 6, 112);
+
+  ctx.fillStyle = "rgba(5, 6, 9, 0.78)";
+  ctx.fillRect(58, 42, 1164, 82);
+  ctx.strokeStyle = "#ffcf4e";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(66, 50, 1148, 66);
+  ctx.fillStyle = "#ffcf4e";
+  ctx.font = "900 28px system-ui";
+  ctx.fillText("Avant skin care: remplis la trousse", 92, 86);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 15px system-ui";
+  ctx.fillText("< > / Q D: bouger   attrape tout pour debloquer le miroir", 92, 108);
+
+  for (const item of productHuntItems) {
+    ctx.save();
+    ctx.translate(item.x, item.y);
+    ctx.rotate(Math.sin(item.spin) * 0.12);
+    drawProductPickupIcon(item.product, 0, 0, 1);
+    ctx.restore();
+  }
+
+  drawProductHuntBag();
+  drawProductChecklist();
+  drawProductHuntFeedback();
+}
+
+function drawProductHuntBag() {
+  const x = productHuntX;
+  const y = 592;
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 58, 94, 15, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#101820";
+  ctx.beginPath();
+  ctx.roundRect(x - 82, y - 24, 164, 86, 16);
+  ctx.fill();
+  ctx.fillStyle = "#ff5fb7";
+  ctx.fillRect(x - 68, y - 8, 136, 54);
+  ctx.strokeStyle = "#f8efd0";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(x, y - 8, 38, Math.PI, 0);
+  ctx.stroke();
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 14px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("TROUSSE", x, y + 27);
+  ctx.textAlign = "left";
+}
+
+function drawProductChecklist() {
+  ctx.fillStyle = "rgba(5, 6, 9, 0.76)";
+  ctx.fillRect(890, 150, 292, 392);
+  ctx.strokeStyle = "#f8efd0";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(898, 158, 276, 376);
+  ctx.fillStyle = "#ffcf4e";
+  ctx.font = "900 18px system-ui";
+  ctx.fillText(`Produits ${productHuntCollected.length}/${skincareProducts.length}`, 922, 192);
+
+  skincareProducts.forEach((product, index) => {
+    const y = 226 + index * 32;
+    const done = productHuntCollected.includes(product.id);
+    ctx.fillStyle = done ? "#c8ff4e" : "#52616c";
+    ctx.fillRect(922, y - 16, 18, 18);
+    ctx.fillStyle = done ? "#101820" : "#f8efd0";
+    ctx.font = "900 13px system-ui";
+    ctx.fillText(done ? "✓" : "?", 926, y - 2);
+    drawProductPickupIcon(product, 966, y - 8, 0.38);
+    ctx.fillStyle = done ? "#f8efd0" : "#b9c2bd";
+    ctx.font = "900 13px system-ui";
+    ctx.fillText(product.name, 992, y + 1);
+  });
+}
+
+function drawProductHuntFeedback() {
+  const text = productHuntFeedbackTimer > 0
+    ? productHuntFeedback
+    : "La trousse doit etre complete avant le miroir.";
+  ctx.fillStyle = "rgba(5, 6, 9, 0.78)";
+  ctx.fillRect(250, 142, 600, 54);
+  ctx.strokeStyle = "#ffcf4e";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(256, 148, 588, 42);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 17px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(text, 550, 175);
+  ctx.textAlign = "left";
+}
+
+function drawProductPickupIcon(product, x, y, scale = 1) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+  if (product.id === "straightener") {
+    drawStraightenerTool(-34, -16, 0.72, false);
+  } else {
+    ctx.fillStyle = "rgba(0,0,0,0.22)";
+    ctx.fillRect(-18, 28, 36, 7);
+    ctx.fillStyle = product.color;
+    ctx.fillRect(-20, -28, 40, 58);
+    ctx.fillStyle = "#f8efd0";
+    ctx.fillRect(-16, -38, 32, 12);
+    ctx.fillStyle = "#20313a";
+    ctx.fillRect(-14, -12, 28, 20);
+    ctx.fillStyle = "#f8efd0";
+    ctx.font = "900 11px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(product.short, 0, 2);
+  }
+  ctx.restore();
+  ctx.textAlign = "left";
+}
+
 function drawSkincareMirror() {
   ctx.fillStyle = "#f8efd0";
   ctx.beginPath();
@@ -5489,7 +5729,7 @@ function desiredMusicTrackId() {
     if (activePlatformRun.id === "platform2") return "mario2";
     if (activePlatformRun.id === "platform3") return "mario3";
   }
-  if (state === "skincare") return "skincare";
+  if (state === "skincare" || state === "productHunt") return "skincare";
   if (state === "sass") return "daron";
   if (state === "momParty") return "fighter";
   if (state === "parental") return "parental";
@@ -5674,8 +5914,8 @@ window.addEventListener("keydown", (event) => {
     event.preventDefault();
     input.vannePressed = true;
   }
-  if (event.key === "Enter" && (state === "map" || state === "podcastReward" || state === "levelVictory" || state === "skincare" || state === "sass" || state === "momParty" || state === "parental" || state === "fighter" || state === "ayaSpecial" || state === "showcaseVideo")) input.jumpPressed = true;
-  if (event.key === "Enter" && state !== "playing" && state !== "map" && state !== "podcastReward" && state !== "levelVictory" && state !== "skincare" && state !== "sass" && state !== "momParty" && state !== "parental" && state !== "fighter" && state !== "ayaSpecial" && state !== "showcaseVideo") resetGame();
+  if (event.key === "Enter" && (state === "map" || state === "podcastReward" || state === "levelVictory" || state === "skincare" || state === "productHunt" || state === "sass" || state === "momParty" || state === "parental" || state === "fighter" || state === "ayaSpecial" || state === "showcaseVideo")) input.jumpPressed = true;
+  if (event.key === "Enter" && state !== "playing" && state !== "map" && state !== "podcastReward" && state !== "levelVictory" && state !== "skincare" && state !== "productHunt" && state !== "sass" && state !== "momParty" && state !== "parental" && state !== "fighter" && state !== "ayaSpecial" && state !== "showcaseVideo") resetGame();
 });
 
 window.addEventListener("keyup", (event) => setKey(event.key, false));

@@ -41,7 +41,8 @@ reussir le special AYA.
 - Niveau 2: plateformer famille avec Pronote, parents, Duduche le chat noir
   pepere et Coca la chatte tricolore qui cherche des calins.
 - Niveau 3: Blague de daron, mini-jeu de vannes avec pause de lecture.
-- Niveau 4: skin care + make-up + lisseur avant le Moulin.
+- Niveau 4: collecte obligatoire de tous les produits, puis skin care + make-up
+  + lisseur avant le Moulin.
 - Niveau 5: plateformer vers Le Moulin, Club Mate, videurs et guest list.
 - Niveau 6: Maman s'incruste avec ses copines; il faut les rediriger avant que
   la jauge de cringe explose.
