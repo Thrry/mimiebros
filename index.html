@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MimieBros - The Aya Quest</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <section class="stage" aria-label="MimieBros The Aya Quest">
+        <canvas id="game" width="1280" height="720"></canvas>
+
+        <div class="hud" aria-live="polite">
+          <div class="brand">MimieBros</div>
+          <div class="stat"><span id="zone">College</span></div>
+          <div class="stat">Minutes tel <span id="score">0</span></div>
+          <div class="stat">Batterie <span id="battery">0%</span></div>
+          <div class="stat">Stress <span id="hearts">3</span></div>
+          <button class="music-button" id="musicBtn" type="button" aria-label="Changer la musique">
+            Musique: Port
+          </button>
+          <button class="sound-button" id="soundBtn" type="button" aria-label="Couper le son">
+            Son: On
+          </button>
+        </div>
+
+        <div class="overlay is-visible" id="overlay">
+          <div class="title-scene" aria-hidden="true">
+            <div class="pixel-cloud cloud-one"></div>
+            <div class="pixel-cloud cloud-two"></div>
+            <div class="pixel-boat"></div>
+            <div class="pixel-moulin"></div>
+            <div class="pixel-pipe"></div>
+            <div class="pixel-blocks">
+              <span></span><span></span><span></span><span></span>
+            </div>
+            <div class="pixel-johanne"></div>
+            <div class="pixel-ground"></div>
+          </div>
+          <div class="panel title-panel">
+            <p class="title-badge">Monde DZ-1</p>
+            <p class="eyebrow">Plateformer 8-bit a la bretonne</p>
+            <h1>MimieBros</h1>
+            <p class="game-subtitle">The Aya Quest</p>
+            <p id="message">
+              Ce soir, c'est showcase d'Aya au Moulin. Il faudra sortir du
+              college plus tot que prevu, passer la barriere des parents, se
+              preparer skin care + maquillage, puis reussir a aller au Moulin.
+            </p>
+            <p class="start-hint">Les univers caches restent en ??? jusqu'a ce qu'ils se revelent.</p>
+            <div class="actions">
+              <button id="startBtn" type="button">Commencer</button>
+              <button id="resetBtn" type="button">Rejouer</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="showcase-video" id="showcaseVideo" aria-hidden="true">
+          <div class="showcase-card">
+            <p class="showcase-kicker">Niveau final</p>
+            <h2>Showcase AYA au Moulin</h2>
+            <iframe
+              id="showcaseFrame"
+              title="Showcase Aya au Moulin"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+            <a
+              id="showcaseLink"
+              href="https://www.tiktok.com/@ayanakamura_holic/video/7549905634041466114"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Ouvrir la video sur TikTok
+            </a>
+            <p class="showcase-hint">Espace ou entree quand le showcase est valide.</p>
+          </div>
+        </div>
+
+        <div class="touch-controls" aria-hidden="true">
+          <button data-control="left" type="button">‹</button>
+          <button data-control="jump" type="button">⌃</button>
+          <button data-control="right" type="button">›</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>
