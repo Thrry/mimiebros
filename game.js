@@ -35,6 +35,9 @@ ayaSpecialArt.src = "./assets/aya-special-bg.png";
 const ayaQueenArt = new Image();
 ayaQueenArt.src = "./assets/aya-queen-sky.png";
 
+const ayaMoulinFinalArt = new Image();
+ayaMoulinFinalArt.src = "./assets/aya-moulin-final.png";
+
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 let musicTimer = null;
@@ -985,7 +988,7 @@ function hitPlayer(power = 1) {
 
 function winGame() {
   state = "won";
-  messageEl.textContent = `Quete terminee: AYA, reine du ciel. ${score} minutes et ${battery}% de batterie pour filmer.`;
+  messageEl.textContent = `Quete terminee: AYA est au Moulin. ${score} minutes et ${battery}% de batterie pour filmer.`;
   overlay.classList.add("victory");
   overlay.classList.add("is-visible");
   setShowcaseVideoVisible(false);
@@ -2678,41 +2681,29 @@ function draw() {
 
 function drawShowcaseVideoBackdrop() {
   ctx.clearRect(0, 0, W, H);
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, "#040819");
-  bg.addColorStop(0.45, "#101447");
-  bg.addColorStop(1, "#120817");
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
-
-  ctx.fillStyle = "#ffcf4e";
-  for (let i = 0; i < 70; i += 1) {
-    const x = (i * 89 + Math.sin(performance.now() * 0.001 + i) * 8) % W;
-    const y = 28 + ((i * 47) % 340);
-    ctx.fillRect(x, y, i % 5 === 0 ? 6 : 3, i % 5 === 0 ? 6 : 3);
+  if (ayaMoulinFinalArt.complete && ayaMoulinFinalArt.naturalWidth > 0) {
+    drawCoverImage(ayaMoulinFinalArt);
+    ctx.fillStyle = "rgba(4, 2, 8, 0.36)";
+    ctx.fillRect(0, 0, W, H);
+    const neon = ctx.createLinearGradient(0, 0, W, H);
+    neon.addColorStop(0, "rgba(255, 95, 103, 0.25)");
+    neon.addColorStop(0.42, "rgba(255, 207, 78, 0.06)");
+    neon.addColorStop(1, "rgba(134, 247, 255, 0.18)");
+    ctx.fillStyle = neon;
+    ctx.fillRect(0, 0, W, H);
+  } else {
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, "#040819");
+    bg.addColorStop(0.45, "#101447");
+    bg.addColorStop(1, "#120817");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+    drawMoulinDisco(920);
+    drawPixelAyaSprite(102, 118, 3);
+    drawPixelAyaTitle(88, 78, 3);
   }
 
-  ctx.save();
-  ctx.globalAlpha = 0.46;
-  ctx.fillStyle = "#ffcf4e";
-  ctx.beginPath();
-  ctx.moveTo(136, H);
-  ctx.lineTo(360, 120);
-  ctx.lineTo(498, H);
-  ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = "#86f7ff";
-  ctx.beginPath();
-  ctx.moveTo(W - 120, H);
-  ctx.lineTo(W - 372, 118);
-  ctx.lineTo(W - 548, H);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
-
-  drawMoulinDisco(920);
-  drawPixelAyaSprite(102, 118, 3);
-  drawPixelAyaTitle(88, 78, 3);
+  drawFinalMoulinNeonSparkles();
 
   ctx.fillStyle = "rgba(5, 6, 9, 0.76)";
   ctx.fillRect(398, 92, 484, 88);
@@ -2735,6 +2726,33 @@ function drawShowcaseVideoBackdrop() {
     ctx.fillRect(x, H - 92, 42, 18 + ((x / 80) % 3) * 10);
   }
   drawVignette();
+}
+
+function drawFinalMoulinNeonSparkles() {
+  ctx.fillStyle = "#ffcf4e";
+  for (let i = 0; i < 70; i += 1) {
+    const x = (i * 89 + Math.sin(performance.now() * 0.001 + i) * 8) % W;
+    const y = 28 + ((i * 47) % 340);
+    ctx.fillRect(x, y, i % 5 === 0 ? 6 : 3, i % 5 === 0 ? 6 : 3);
+  }
+
+  ctx.save();
+  ctx.globalAlpha = 0.32;
+  ctx.fillStyle = "#ff4d56";
+  ctx.beginPath();
+  ctx.moveTo(150, H);
+  ctx.lineTo(430, 82);
+  ctx.lineTo(560, H);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "#86f7ff";
+  ctx.beginPath();
+  ctx.moveTo(W - 100, H);
+  ctx.lineTo(W - 330, 120);
+  ctx.lineTo(W - 520, H);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
 }
 
 function updateFloatingTexts() {
@@ -6261,68 +6279,47 @@ function drawAyaInSky() {
   const t = performance.now() * 0.002;
   const cx = W / 2;
   ctx.clearRect(0, 0, W, H);
-  const sky = ctx.createLinearGradient(0, 0, 0, H);
-  sky.addColorStop(0, "#05091f");
-  sky.addColorStop(0.45, "#102b7c");
-  sky.addColorStop(1, "#f3a64c");
-  ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, W, H);
 
-  drawAyaSpecialStars();
-  ctx.fillStyle = "rgba(255, 207, 78, 0.94)";
-  ctx.beginPath();
-  ctx.arc(1040, 116, 48, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "rgba(5, 9, 31, 0.86)";
-  ctx.beginPath();
-  ctx.arc(1018, 98, 48, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.save();
-  ctx.globalAlpha = 0.48;
-  ctx.strokeStyle = "#ffcf4e";
-  ctx.lineWidth = 10;
-  for (let i = 0; i < 9; i += 1) {
-    const angle = -0.9 + i * 0.225;
-    ctx.beginPath();
-    ctx.moveTo(cx, 250);
-    ctx.lineTo(cx + Math.cos(angle) * 760, 250 + Math.sin(angle) * 560);
-    ctx.stroke();
-  }
-  ctx.restore();
-
-  const aura = ctx.createRadialGradient(cx, 268, 80, cx, 268, 470);
-  aura.addColorStop(0, "rgba(255, 216, 239, 0.78)");
-  aura.addColorStop(0.38, "rgba(134, 247, 255, 0.28)");
-  aura.addColorStop(1, "rgba(255, 216, 239, 0)");
-  ctx.fillStyle = aura;
-  ctx.fillRect(0, 0, W, H);
-
-  ctx.fillStyle = "rgba(248, 239, 208, 0.86)";
-  drawCloud(150, 572, 1.4);
-  drawCloud(330, 622, 1.05);
-  drawCloud(930, 600, 1.3);
-  drawCloud(1120, 548, 0.95);
-
-  const floatY = 34 + Math.sin(t * 3) * 7;
-  if (ayaQueenArt.complete && ayaQueenArt.naturalWidth > 0) {
-    ctx.save();
-    ctx.shadowColor = "rgba(255, 207, 78, 0.72)";
-    ctx.shadowBlur = 38;
-    ctx.drawImage(ayaQueenArt, cx - 335, floatY, 670, 670);
-    ctx.restore();
+  if (ayaMoulinFinalArt.complete && ayaMoulinFinalArt.naturalWidth > 0) {
+    drawCoverImage(ayaMoulinFinalArt);
+    ctx.fillStyle = "rgba(4, 2, 8, 0.24)";
+    ctx.fillRect(0, 0, W, H);
+    const focus = ctx.createRadialGradient(548, 290, 80, 548, 290, 620);
+    focus.addColorStop(0, "rgba(255, 207, 78, 0.08)");
+    focus.addColorStop(0.42, "rgba(255, 77, 86, 0.08)");
+    focus.addColorStop(1, "rgba(2, 4, 12, 0.7)");
+    ctx.fillStyle = focus;
+    ctx.fillRect(0, 0, W, H);
   } else {
-    drawPixelAyaTitle(cx - 214, 74, 12);
-    drawPixelAyaSprite(cx - 72, 150 + Math.sin(t * 3) * 4, 6);
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, "#05091f");
+    sky.addColorStop(0.45, "#102b7c");
+    sky.addColorStop(1, "#f3a64c");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H);
+    drawAyaSpecialStars();
+    const floatY = 34 + Math.sin(t * 3) * 7;
+    if (ayaQueenArt.complete && ayaQueenArt.naturalWidth > 0) {
+      ctx.save();
+      ctx.shadowColor = "rgba(255, 207, 78, 0.72)";
+      ctx.shadowBlur = 38;
+      ctx.drawImage(ayaQueenArt, cx - 335, floatY, 670, 670);
+      ctx.restore();
+    } else {
+      drawPixelAyaTitle(cx - 214, 74, 12);
+      drawPixelAyaSprite(cx - 72, 150 + Math.sin(t * 3) * 4, 6);
+    }
   }
+
+  drawFinalMoulinNeonSparkles();
 
   ctx.fillStyle = "#ffcf4e";
   ctx.strokeStyle = "#050609";
   ctx.lineWidth = 6;
   ctx.font = "900 42px monospace";
   ctx.textAlign = "center";
-  ctx.strokeText("AYA REINE DU CIEL", cx, 650);
-  ctx.fillText("AYA REINE DU CIEL", cx, 650);
+  ctx.strokeText("AYA AU MOULIN", cx, 650);
+  ctx.fillText("AYA AU MOULIN", cx, 650);
   ctx.textAlign = "left";
 }
 
