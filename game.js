@@ -960,7 +960,7 @@ function rectsOverlap(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }
 
-function hitPlayer(power = 1) {
+function hitPlayer(power = 1, reason = "") {
   if (player.invuln > 0 || state !== "playing") return;
   if (player.big) {
     player.big = false;
@@ -973,7 +973,8 @@ function hitPlayer(power = 1) {
     updateHud();
     return;
   }
-  addFloat(["-2 min", "cringe hit", "brainrot!"][Math.floor(Math.random() * 3)], player.x, player.y, "#ff7777");
+  const hitText = reason || ["-2 min", "cringe hit", "brainrot!"][Math.floor(Math.random() * 3)];
+  addFloat(hitText, player.x, player.y, "#ff7777");
   player.hearts -= power;
   shake = 16;
   if (player.hearts <= 0) {
@@ -2363,7 +2364,12 @@ function update(dt) {
         player.vy = JUMP * 0.62;
         enemy.x = enemy.vx > 0 ? enemy.min : enemy.max - enemy.w;
       } else {
-        hitPlayer();
+        const schoolNote = enemy.kind === "teacher"
+          ? "PROF: mot dans le cahier"
+          : enemy.kind === "supervisor"
+            ? "SURV: mot dans le cahier"
+            : "";
+        hitPlayer(1, schoolNote);
       }
     }
   }
