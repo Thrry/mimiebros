@@ -575,11 +575,16 @@ const level = {
   powerups: [],
   enemies: [
     { x: 720, y: FLOOR_Y - 54, w: 52, h: 54, min: 610, max: 870, vx: 1.55, kind: "supervisor" },
+    { x: 910, y: FLOOR_Y - 42, w: 56, h: 42, min: 820, max: 1010, vx: 1.38, kind: "detention" },
     { x: 1030, y: 479, w: 52, h: 54, min: 1040, max: 1210, vx: 1.35, kind: "supervisor" },
+    { x: 1290, y: FLOOR_Y - 44, w: 54, h: 44, min: 1190, max: 1410, vx: 1.62, kind: "notebookNote" },
     { x: 1510, y: 414, w: 52, h: 56, min: 1420, max: 1610, vx: 1.5, kind: "teacher" },
+    { x: 1710, y: 414, w: 56, h: 42, min: 1665, max: 1825, vx: 1.42, kind: "detention" },
     { x: 1840, y: 354, w: 52, h: 56, min: 1830, max: 1970, vx: 1.45, kind: "teacher" },
+    { x: 2150, y: FLOOR_Y - 44, w: 54, h: 44, min: 2050, max: 2255, vx: 1.7, kind: "notebookNote" },
     { x: 2260, y: FLOOR_Y - 58, w: 56, h: 58, min: 2100, max: 2390, vx: 1.9, kind: "cpe" },
     { x: 2580, y: 420, w: 60, h: 60, min: 2540, max: 2760, vx: 1.75, kind: "principal" },
+    { x: 2788, y: 390, w: 56, h: 42, min: 2740, max: 2878, vx: 1.64, kind: "detention" },
     { x: 2880, y: 378, w: 60, h: 60, min: 2840, max: 3000, vx: 1.9, kind: "principal" },
     { x: 3330, y: FLOOR_Y - 48, w: 44, h: 48, min: 3200, max: 3480, vx: 2.05, kind: "pronote" },
     { x: 3700, y: 426, w: 44, h: 48, min: 3580, max: 3780, vx: 1.85, kind: "pronote" },
@@ -640,6 +645,7 @@ for (let x = 170; x < WORLD_W - 520; x += 310) {
 level.enemies.forEach((enemy) => {
   enemy.spawnX = enemy.x;
   enemy.baseVx = Math.abs(enemy.vx) || 1.4;
+  enemy.defeated = false;
 });
 
 let state = "menu";
@@ -851,6 +857,7 @@ function resetGame() {
   level.enemies.forEach((enemy, index) => {
     enemy.x = enemy.spawnX;
     enemy.vx = enemy.baseVx;
+    enemy.defeated = false;
   });
   overlay.classList.remove("victory");
   overlay.classList.remove("is-visible");
@@ -890,6 +897,7 @@ function startPlatformLevel(runId = "platform1") {
   level.enemies.forEach((enemy) => {
     enemy.x = enemy.spawnX;
     enemy.vx = enemy.baseVx * activePlatformRun.enemySpeed;
+    enemy.defeated = false;
   });
   updateHud();
   syncMusicToState();
@@ -1126,6 +1134,17 @@ function skincareCollectionComplete() {
 
 function missingSkincareProducts() {
   return skincareProducts.filter((product) => !productHuntCollected.includes(product.id));
+}
+
+function stompDefeatsEnemy(enemy) {
+  return ["pronote", "detention", "notebookNote"].includes(enemy.kind);
+}
+
+function stompEnemyReward(enemy) {
+  if (enemy.kind === "pronote") return { points: 5, text: "PRONOTE efface +5" };
+  if (enemy.kind === "detention") return { points: 4, text: "COLLE esquivee +4" };
+  if (enemy.kind === "notebookNote") return { points: 4, text: "mot annule +4" };
+  return { points: 3, text: "ratio +3" };
 }
 
 function spawnFloorY(x) {
@@ -2382,6 +2401,7 @@ function update(dt) {
   updateCheckpoint();
 
   for (const enemy of level.enemies) {
+    if (enemy.defeated) continue;
     if (!inActivePlatformRun(enemy, 160)) continue;
     if (enemy.cuddleTimer > 0) enemy.cuddleTimer -= 1;
     if (enemy.kind === "coca") {
@@ -2416,10 +2436,16 @@ function update(dt) {
       }
       const stomp = player.vy > 4 && player.y + player.h - enemy.y < 24;
       if (stomp) {
-        score += 3;
-        addFloat("ratio +3", enemy.x, enemy.y, "#f2dc85");
+        const reward = stompEnemyReward(enemy);
+        score += reward.points;
+        addFloat(reward.text, enemy.x + enemy.w / 2, enemy.y, "#f2dc85");
         player.vy = JUMP * 0.62;
-        enemy.x = enemy.vx > 0 ? enemy.min : enemy.max - enemy.w;
+        if (stompDefeatsEnemy(enemy)) {
+          enemy.defeated = true;
+        } else {
+          enemy.x = enemy.vx > 0 ? enemy.min : enemy.max - enemy.w;
+        }
+        updateHud();
       } else {
         const schoolNote = enemy.kind === "teacher"
           ? "PROF: mot dans le cahier"
@@ -5268,12 +5294,15 @@ function drawSkincareCollectionHud() {
 
 function drawEnemies() {
   for (const enemy of level.enemies) {
+    if (enemy.defeated) continue;
     if (!inActivePlatformRun(enemy, 160)) continue;
     if (enemy.kind === "supervisor") drawChaser(enemy, "#4d6f8f", "SURV", "#ffcf9d");
     if (enemy.kind === "teacher") drawChaser(enemy, "#6d4a8f", "PROF", "#fff8dd");
     if (enemy.kind === "cpe") drawChaser(enemy, "#8f4d78", "CPE", "#fff8dd");
     if (enemy.kind === "principal") drawChaser(enemy, "#26313d", "DIR", "#d9b177");
     if (enemy.kind === "pronote") drawPronoteEnemy(enemy);
+    if (enemy.kind === "detention") drawSchoolPaperEnemy(enemy, "COLLE", "#ffcf4e", "#7a3333");
+    if (enemy.kind === "notebookNote") drawSchoolPaperEnemy(enemy, "MOT", "#f8efd0", "#2f6f8f");
     if (enemy.kind === "parent") drawChaser(enemy, "#2f6f8f", "PARENT", "#ffcf9d");
     if (enemy.kind === "duduche") drawFamilyCat(enemy, "duduche");
     if (enemy.kind === "coca") drawFamilyCat(enemy, "coca");
@@ -5505,6 +5534,49 @@ function drawPronoteEnemy(e) {
   ctx.font = "900 10px system-ui";
   ctx.textAlign = "center";
   ctx.fillText("PRONOTE", e.x + e.w / 2, e.y - 5);
+  ctx.textAlign = "left";
+}
+
+function drawSchoolPaperEnemy(e, label, paperColor, accent) {
+  const t = performance.now() * 0.01 + e.x;
+  const bob = Math.sin(t) * 3;
+  const tilt = Math.sin(t * 0.7) * 0.08;
+
+  ctx.save();
+  ctx.translate(e.x + e.w / 2, e.y + e.h / 2 + bob);
+  ctx.rotate(tilt);
+
+  ctx.fillStyle = "rgba(7, 10, 12, 0.26)";
+  ctx.beginPath();
+  ctx.ellipse(0, e.h / 2 + 4, e.w / 2, 7, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = paperColor;
+  ctx.beginPath();
+  ctx.roundRect(-e.w / 2, -e.h / 2, e.w, e.h, 6);
+  ctx.fill();
+  ctx.fillStyle = "rgba(5, 6, 9, 0.12)";
+  ctx.beginPath();
+  ctx.moveTo(e.w / 2 - 13, -e.h / 2);
+  ctx.lineTo(e.w / 2, -e.h / 2 + 13);
+  ctx.lineTo(e.w / 2 - 13, -e.h / 2 + 13);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = accent;
+  ctx.fillRect(-e.w / 2 + 8, -e.h / 2 + 9, e.w - 16, 5);
+  ctx.fillRect(-e.w / 2 + 10, -e.h / 2 + 19, e.w - 26, 4);
+  ctx.fillStyle = "#101820";
+  ctx.fillRect(-14, -2, 5, 5);
+  ctx.fillRect(10, -2, 5, 5);
+  ctx.fillStyle = "#7a3333";
+  ctx.fillRect(-8, 10, 16, 3);
+
+  ctx.fillStyle = "#101820";
+  ctx.font = "900 11px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(label, 0, -e.h / 2 + 31);
+  ctx.restore();
   ctx.textAlign = "left";
 }
 
