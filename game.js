@@ -311,16 +311,16 @@ const podcastReward = {
 };
 
 const mapNodes = [
-  { id: "platform1", kind: "platform", title: "Mario 1", subtitle: "College", x: 150, y: 378, level: 1 },
-  { id: "platform2", kind: "platform", title: "Mario 2", subtitle: "Famille", x: 360, y: 410, level: 2 },
-  { id: "sass", kind: "minigame", title: "Blagues", subtitle: "Daron", x: 548, y: 426, level: 3 },
-  { id: "skincare", kind: "minigame", title: "Make-up", subtitle: "Avant Moulin", x: 700, y: 392, level: 4 },
-  { id: "platform3", kind: "platform", title: "Mario 3", subtitle: "Moulin", x: 864, y: 428, level: 5 },
-  { id: "momParty", kind: "minigame", title: "Maman", subtitle: "S'incruste", x: 982, y: 470, level: 6 },
-  { id: "parental", kind: "minigame", title: "Controle", subtitle: "Telephone", x: 1048, y: 362, level: 7 },
-  { id: "fighter", kind: "minigame", title: "Street Johanne", subtitle: "Taxi Papa", x: 1130, y: 456, level: 8 },
-  { id: "finale", kind: "finale", title: "Special AYA", subtitle: "Rythme", x: 1190, y: 322, level: 9 },
-  { id: "showcase", kind: "video", title: "Showcase", subtitle: "AYA au Moulin", x: 1246, y: 390, level: 10 },
+  { id: "platform1", kind: "platform", title: "Mario 1", subtitle: "College", x: 188, y: 370, level: 1 },
+  { id: "platform2", kind: "platform", title: "Mario 2", subtitle: "Famille", x: 338, y: 430, level: 2 },
+  { id: "sass", kind: "minigame", title: "Blagues", subtitle: "Daron", x: 486, y: 344, level: 3 },
+  { id: "skincare", kind: "minigame", title: "Make-up", subtitle: "Avant Moulin", x: 642, y: 414, level: 4 },
+  { id: "platform3", kind: "platform", title: "Mario 3", subtitle: "Moulin", x: 798, y: 342, level: 5 },
+  { id: "momParty", kind: "minigame", title: "Maman", subtitle: "S'incruste", x: 940, y: 442, level: 6 },
+  { id: "parental", kind: "minigame", title: "Controle", subtitle: "Telephone", x: 1038, y: 318, level: 7 },
+  { id: "fighter", kind: "minigame", title: "Street Johanne", subtitle: "Taxi Papa", x: 1122, y: 446, level: 8 },
+  { id: "finale", kind: "finale", title: "Special AYA", subtitle: "Rythme", x: 1186, y: 286, level: 9 },
+  { id: "showcase", kind: "video", title: "Showcase", subtitle: "AYA au Moulin", x: 1200, y: 404, level: 10 },
 ];
 
 const platformRuns = {
@@ -2830,44 +2830,16 @@ function drawCoverImage(image) {
 
 function drawWorldMap() {
   ctx.clearRect(0, 0, W, H);
-  if (mapArt.complete && mapArt.naturalWidth > 0) {
-    drawCoverImage(mapArt);
-    const shade = ctx.createLinearGradient(0, 0, 0, H);
-    shade.addColorStop(0, "rgba(4, 8, 12, 0.08)");
-    shade.addColorStop(0.56, "rgba(4, 8, 12, 0)");
-    shade.addColorStop(1, "rgba(4, 8, 12, 0.22)");
-    ctx.fillStyle = shade;
-    ctx.fillRect(0, 0, W, H);
-  } else {
   const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, "#7fc2df");
-  bg.addColorStop(0.56, "#d7eebf");
-  bg.addColorStop(1, "#1f8fb5");
+  bg.addColorStop(0, "#6fb7d6");
+  bg.addColorStop(0.5, "#98d8c0");
+  bg.addColorStop(1, "#1f6f9a");
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  ctx.fillStyle = "rgba(255,255,255,0.28)";
-  for (let x = 40; x < W; x += 180) ctx.fillRect(x, 610 + Math.sin(x) * 8, 92, 4);
-
-  for (let row = 0; row < 6; row += 1) {
-    for (let col = 0; col < 9; col += 1) {
-      const x = 160 + col * 120 + row * 34;
-      const y = 138 + row * 58;
-      const water = row > 3 && col < 2;
-      drawIsoTile(x, y, water ? "#4aa8c7" : (row + col) % 2 ? "#7dbd89" : "#8bcf99");
-    }
-  }
-
-  }
-
-  ctx.strokeStyle = "rgba(248,239,208,0.78)";
-  ctx.lineWidth = 8;
-  ctx.beginPath();
-  mapNodes.forEach((node, index) => {
-    if (index === 0) ctx.moveTo(node.x, node.y);
-    else ctx.lineTo(node.x, node.y);
-  });
-  ctx.stroke();
+  drawIsometricSea();
+  drawIsometricCityGrid();
+  drawIsometricMapRoute();
 
   drawMapLandmarkForNode(mapNodes[0], "college");
   drawMapLandmarkForNode(mapNodes[1], "parents");
@@ -2882,18 +2854,93 @@ function drawWorldMap() {
   drawAyaTourBusOnMap();
 
   mapNodes.forEach((node, index) => drawMapNode(node, index));
+  drawSelectedMapPanel();
 
   ctx.fillStyle = "rgba(6,10,16,0.7)";
-  ctx.fillRect(56, 40, 500, 96);
+  ctx.fillRect(56, 40, 548, 96);
   ctx.strokeStyle = "rgba(255, 239, 198, 0.78)";
   ctx.lineWidth = 4;
-  ctx.strokeRect(62, 46, 488, 84);
+  ctx.strokeRect(62, 46, 536, 84);
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 38px system-ui";
   ctx.fillText("MimieBros", 96, 92);
   ctx.fillStyle = "#ffcf4e";
   ctx.font = "800 16px system-ui";
   ctx.fillText("Les univers se revelent au fur et a mesure", 96, 122);
+}
+
+function drawIsometricSea() {
+  ctx.fillStyle = "#1f8fb5";
+  ctx.beginPath();
+  ctx.moveTo(0, 520);
+  ctx.lineTo(230, 470);
+  ctx.lineTo(520, 610);
+  ctx.lineTo(380, H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(248,239,208,0.36)";
+  for (let x = -40; x < 520; x += 118) {
+    ctx.fillRect(x, 604 + Math.sin(x) * 8, 78, 4);
+  }
+
+  ctx.fillStyle = "#f8efd0";
+  ctx.fillRect(84, 548, 52, 14);
+  ctx.fillStyle = "#d94c3f";
+  ctx.fillRect(122, 536, 28, 11);
+  ctx.fillStyle = "#3a4d58";
+  ctx.fillRect(96, 562, 82, 5);
+}
+
+function drawIsometricCityGrid() {
+  for (let row = 0; row < 7; row += 1) {
+    for (let col = 0; col < 10; col += 1) {
+      const x = 176 + col * 105 + row * 38;
+      const y = 176 + row * 54;
+      if (x > 1210 || y > 585) continue;
+      const coastal = row > 4 && col < 3;
+      const plaza = (row === 2 && col > 4) || (row === 4 && col > 6);
+      const color = coastal ? "#5bb0c8" : plaza ? "#c4c1a6" : (row + col) % 2 ? "#7dbd89" : "#8bcf99";
+      drawIsoTile(x, y, color);
+    }
+  }
+
+  ctx.strokeStyle = "rgba(248,239,208,0.28)";
+  ctx.lineWidth = 3;
+  for (let i = 0; i < 6; i += 1) {
+    ctx.beginPath();
+    ctx.moveTo(138 + i * 142, 210 + i * 2);
+    ctx.lineTo(520 + i * 142, 406 + i * 2);
+    ctx.stroke();
+  }
+}
+
+function drawIsometricMapRoute() {
+  ctx.save();
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "rgba(18, 26, 31, 0.45)";
+  ctx.lineWidth = 18;
+  drawMapRouteLine();
+  ctx.strokeStyle = "rgba(248,239,208,0.9)";
+  ctx.lineWidth = 10;
+  drawMapRouteLine();
+  ctx.strokeStyle = "rgba(255,207,78,0.74)";
+  ctx.lineWidth = 3;
+  ctx.setLineDash([12, 14]);
+  drawMapRouteLine();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+function drawMapRouteLine() {
+  ctx.beginPath();
+  mapNodes.forEach((node, index) => {
+    if (index === 0) ctx.moveTo(node.x, node.y);
+    else ctx.lineTo(node.x, node.y);
+  });
+  ctx.stroke();
 }
 
 function drawIsoTile(x, y, color) {
@@ -2915,35 +2962,63 @@ function drawIsoTile(x, y, color) {
   ctx.fill();
 }
 
+function drawIsoPlatform(x, y, color, selected, unlocked) {
+  ctx.fillStyle = "rgba(5, 6, 9, 0.34)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 24, selected ? 54 : 44, selected ? 17 : 13, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = unlocked ? color : "#52616c";
+  ctx.beginPath();
+  ctx.moveTo(x, y - 24);
+  ctx.lineTo(x + 48, y);
+  ctx.lineTo(x, y + 24);
+  ctx.lineTo(x - 48, y);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = unlocked ? "rgba(5,6,9,0.2)" : "rgba(5,6,9,0.38)";
+  ctx.beginPath();
+  ctx.moveTo(x - 48, y);
+  ctx.lineTo(x, y + 24);
+  ctx.lineTo(x + 48, y);
+  ctx.lineTo(x, y + 40);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = selected ? "#ffcf4e" : unlocked ? "rgba(248,239,208,0.72)" : "rgba(248,239,208,0.34)";
+  ctx.lineWidth = selected ? 5 : 2;
+  ctx.beginPath();
+  ctx.moveTo(x, y - 24);
+  ctx.lineTo(x + 48, y);
+  ctx.lineTo(x, y + 24);
+  ctx.lineTo(x - 48, y);
+  ctx.closePath();
+  ctx.stroke();
+}
+
 function drawMapNode(node, index) {
   const selected = index === mapSelected;
   const unlocked = node.level <= unlockedLevel;
-  const visibleTitle = unlocked ? node.title : "???";
-  const sublevelCount = platformChapters[node.id]?.length || 0;
-  const visibleSubtitle = unlocked
-    ? sublevelCount > 0 ? `${sublevelCount} sous-niveaux` : node.subtitle
-    : "a decouvrir";
   const visibleNumber = unlocked ? String(node.level) : "?";
+  const palette = node.kind === "platform" ? "#6fcf86"
+    : node.kind === "finale" ? "#ffcf4e"
+      : node.kind === "video" ? "#86f7ff"
+        : "#ff9ec5";
 
-  ctx.save();
-  ctx.translate(node.x, node.y);
-  ctx.fillStyle = "rgba(4, 8, 12, 0.5)";
-  ctx.beginPath();
-  ctx.ellipse(0, 15, selected ? 42 : 34, selected ? 16 : 12, 0, 0, Math.PI * 2);
-  ctx.fill();
+  drawIsoPlatform(node.x, node.y + 22, palette, selected, unlocked);
 
   if (selected) {
     const pulse = 1 + Math.sin(performance.now() * 0.006) * 0.08;
     ctx.strokeStyle = "rgba(255, 207, 78, 0.78)";
     ctx.lineWidth = 5;
     ctx.beginPath();
-    ctx.arc(0, 0, 35 * pulse, 0, Math.PI * 2);
+    ctx.ellipse(node.x, node.y + 19, 68 * pulse, 38 * pulse, 0, 0, Math.PI * 2);
     ctx.stroke();
   }
 
+  ctx.save();
+  ctx.translate(node.x, node.y);
   ctx.fillStyle = selected ? "#ffcf4e" : unlocked ? "#f8efd0" : "#313d4a";
   ctx.beginPath();
-  ctx.arc(0, 0, selected ? 27 : 22, 0, Math.PI * 2);
+  ctx.arc(0, 0, selected ? 25 : 21, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = unlocked ? "#101820" : "#f8efd0";
   ctx.lineWidth = 4;
@@ -2954,28 +3029,58 @@ function drawMapNode(node, index) {
   ctx.textAlign = "center";
   ctx.fillText(visibleNumber, 0, 6);
 
-  ctx.fillStyle = "rgba(4, 8, 12, 0.72)";
-  ctx.fillRect(-62, 38, 124, 40);
-  ctx.strokeStyle = selected ? "#ffcf4e" : "rgba(255, 239, 198, 0.5)";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(-58, 42, 116, 32);
-
-  ctx.fillStyle = selected ? "#ffcf4e" : "#f8efd0";
-  ctx.font = "900 15px system-ui";
-  ctx.fillText(visibleTitle, 0, 56);
-  ctx.fillStyle = unlocked ? "#b9c2bd" : "#8d98a0";
-  ctx.font = "800 11px system-ui";
-  ctx.fillText(visibleSubtitle, 0, 72);
+  ctx.fillStyle = selected ? "#ffcf4e" : unlocked ? "#f8efd0" : "#8d98a0";
+  ctx.font = "900 13px system-ui";
+  ctx.fillText(mapNodeShortLabel(node, unlocked), 0, 42);
   ctx.restore();
   ctx.textAlign = "left";
 }
 
+function mapNodeShortLabel(node, unlocked) {
+  if (!unlocked) return "???";
+  if (node.kind === "platform") return "MARIO";
+  if (node.id === "finale") return "AYA";
+  if (node.id === "showcase") return "LIVE";
+  return "MINI";
+}
+
+function drawSelectedMapPanel() {
+  const node = mapNodes[mapSelected];
+  const unlocked = node.level <= unlockedLevel;
+  const sublevelCount = platformChapters[node.id]?.length || 0;
+  const title = unlocked ? node.title : "???";
+  const subtitle = unlocked
+    ? sublevelCount > 0 ? `${node.subtitle} - ${sublevelCount} sous-niveaux` : node.subtitle
+    : "Univers encore cache";
+  const kindText = unlocked
+    ? node.kind === "platform" ? "niveau Mario"
+      : node.kind === "finale" ? "niveau AYA"
+        : node.kind === "video" ? "showcase"
+          : "mini-jeu"
+    : "a decouvrir";
+
+  ctx.fillStyle = "rgba(6,10,16,0.78)";
+  ctx.fillRect(56, 606, 612, 78);
+  ctx.strokeStyle = "#ffcf4e";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(64, 614, 596, 62);
+  ctx.fillStyle = "#ffcf4e";
+  ctx.font = "900 18px system-ui";
+  ctx.fillText(`Niveau ${unlocked ? node.level : "?"} - ${kindText}`, 92, 642);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 25px system-ui";
+  ctx.fillText(title, 92, 668);
+  ctx.fillStyle = "#b9c2bd";
+  ctx.font = "800 14px system-ui";
+  ctx.fillText(subtitle, 330, 668);
+}
+
 function drawMapLandmarkForNode(node, kind) {
   if (node.level <= unlockedLevel) {
-    drawMapLandmark(node.x, node.y - 52, kind);
+    drawMapLandmark(node.x, node.y - 36, kind);
     return;
   }
-  drawMysteryLandmark(node.x, node.y - 52);
+  drawMysteryLandmark(node.x, node.y - 36);
 }
 
 function drawAyaTourBusOnMap() {
@@ -2983,8 +3088,8 @@ function drawAyaTourBusOnMap() {
   if (!moulinNode) return;
   const t = performance.now() * 0.004;
   const arrival = Math.max(0, Math.min(1, (unlockedLevel - 3) / 2));
-  const x = moulinNode.x - 220 + arrival * 96 + Math.sin(t) * 4;
-  const y = moulinNode.y - 112 + Math.sin(t * 1.7) * 2;
+  const x = moulinNode.x - 250 + arrival * 128 + Math.sin(t) * 4;
+  const y = moulinNode.y - 108 + Math.sin(t * 1.7) * 2;
 
   ctx.save();
   ctx.globalAlpha = unlockedLevel >= 3 ? 1 : 0.48;
