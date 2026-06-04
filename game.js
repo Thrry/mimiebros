@@ -1210,7 +1210,7 @@ function updateLevelVictory(dt) {
     }
   }
 
-  if (input.jumpPressed && levelVictory.timer > 300) {
+  if ((input.leftPressed || input.rightPressed || input.jumpPressed) && levelVictory.timer > 120) {
     levelVictory.fading = true;
   }
 
@@ -4402,7 +4402,7 @@ function drawLevelVictory() {
   drawCelebrationIcons(W / 2, 386);
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 18px system-ui";
-  ctx.fillText(levelVictory?.fading ? "Chargement du niveau suivant..." : "Espace ou entree pour continuer", W / 2, 462);
+  ctx.fillText(levelVictory?.fading ? "Chargement du niveau suivant..." : "Fleches, espace ou entree pour continuer", W / 2, 462);
   ctx.textAlign = "left";
 
   if (fade > 0) {
