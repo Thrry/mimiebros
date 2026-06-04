@@ -29,8 +29,9 @@ Puis va sur `http://127.0.0.1:8123/`.
 
 Johanne part du college pour rejoindre le showcase d'Aya au Moulin. Il faut
 recuperer des minutes de telephone et de la batterie pour pouvoir filmer AYA,
-passer les parents, croiser Duduche et Coca, convaincre Papa de conduire les
-enfants au Moulin, puis reussir le special AYA.
+passer les parents, croiser Duduche et Coca, empecher Maman et ses copines de
+s'incruster au Moulin, convaincre Papa de conduire les enfants au Moulin, puis
+reussir le special AYA.
 
 ## Structure prevue
 
@@ -42,8 +43,10 @@ enfants au Moulin, puis reussir le special AYA.
 - Niveau 3: Blague de daron, mini-jeu de vannes avec pause de lecture.
 - Niveau 4: skin care + make-up + lisseur avant le Moulin.
 - Niveau 5: plateformer vers Le Moulin, Club Mate, videurs et guest list.
-- Niveau 6: controle parental avec WhatsApp/Actu et codes a taper.
-- Niveau 7: Street Johanne, pour gagner le droit que Papa amene les enfants en
+- Niveau 6: Maman s'incruste avec ses copines; il faut les rediriger avant que
+  la jauge de cringe explose.
+- Niveau 7: controle parental avec WhatsApp/Actu et codes a taper.
+- Niveau 8: Street Johanne, pour gagner le droit que Papa amene les enfants en
   voiture au Moulin.
-- Niveau 8: special AYA, mini-jeu de rythme.
-- Niveau 9: video du showcase AYA.
+- Niveau 9: special AYA, mini-jeu de rythme.
+- Niveau 10: video du showcase AYA.

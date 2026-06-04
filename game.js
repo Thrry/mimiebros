@@ -254,10 +254,11 @@ const mapNodes = [
   { id: "sass", kind: "minigame", title: "Blagues", subtitle: "Daron", x: 548, y: 426, level: 3 },
   { id: "skincare", kind: "minigame", title: "Make-up", subtitle: "Avant Moulin", x: 700, y: 392, level: 4 },
   { id: "platform3", kind: "platform", title: "Mario 3", subtitle: "Moulin", x: 864, y: 428, level: 5 },
-  { id: "parental", kind: "minigame", title: "Controle", subtitle: "Telephone", x: 980, y: 392, level: 6 },
-  { id: "fighter", kind: "minigame", title: "Street Johanne", subtitle: "Taxi Papa", x: 1100, y: 456, level: 7 },
-  { id: "finale", kind: "finale", title: "Special AYA", subtitle: "Rythme", x: 1168, y: 322, level: 8 },
-  { id: "showcase", kind: "video", title: "Showcase", subtitle: "AYA au Moulin", x: 1234, y: 390, level: 9 },
+  { id: "momParty", kind: "minigame", title: "Maman", subtitle: "S'incruste", x: 982, y: 470, level: 6 },
+  { id: "parental", kind: "minigame", title: "Controle", subtitle: "Telephone", x: 1048, y: 362, level: 7 },
+  { id: "fighter", kind: "minigame", title: "Street Johanne", subtitle: "Taxi Papa", x: 1130, y: 456, level: 8 },
+  { id: "finale", kind: "finale", title: "Special AYA", subtitle: "Rythme", x: 1190, y: 322, level: 9 },
+  { id: "showcase", kind: "video", title: "Showcase", subtitle: "AYA au Moulin", x: 1246, y: 390, level: 10 },
 ];
 
 const platformRuns = {
@@ -553,6 +554,13 @@ let parentalStealth = 0;
 let parentalFeedback = "";
 let parentalFeedbackTimer = 0;
 let parentalAlertTimer = 0;
+let momLane = 1;
+let momRespect = 0;
+let momCringe = 0;
+let momSpawnTimer = 0;
+let momGuests = [];
+let momFeedback = "";
+let momFeedbackTimer = 0;
 let unlockedLevel = 1;
 let mapSelected = 0;
 let sassRound = 0;
@@ -633,6 +641,13 @@ function resetGame() {
   parentalFeedback = "";
   parentalFeedbackTimer = 0;
   parentalAlertTimer = 0;
+  momLane = 1;
+  momRespect = 0;
+  momCringe = 0;
+  momSpawnTimer = 0;
+  momGuests = [];
+  momFeedback = "";
+  momFeedbackTimer = 0;
   unlockedLevel = 1;
   mapSelected = 0;
   sassRound = 0;
@@ -762,6 +777,12 @@ function updateHud() {
     zoneEl.textContent = "Controle parental";
     scoreEl.textContent = score;
     heartsEl.textContent = player.hearts;
+    return;
+  }
+  if (state === "momParty") {
+    zoneEl.textContent = "Maman s'incruste";
+    scoreEl.textContent = score;
+    heartsEl.textContent = Math.max(0, 100 - momCringe);
     return;
   }
   if (state === "sass") {
@@ -1212,6 +1233,110 @@ function startParentalLevel() {
   syncMusicToState();
 }
 
+function startMomPartyLevel() {
+  state = "momParty";
+  momLane = 1;
+  momRespect = 0;
+  momCringe = 0;
+  momSpawnTimer = 280;
+  momGuests = [];
+  momFeedback = "Niveau 6: Maman arrive avec ses copines. Redirige-les avant le dancefloor.";
+  momFeedbackTimer = 220;
+  updateHud();
+  syncMusicToState();
+}
+
+function updateMomPartyLevel(dt) {
+  if (input.leftPressed) momLane = Math.max(0, momLane - 1);
+  if (input.rightPressed) momLane = Math.min(3, momLane + 1);
+  if (input.jumpPressed) redirectMomGuest();
+
+  momSpawnTimer -= dt;
+  if (momSpawnTimer <= 0) {
+    spawnMomGuest();
+    momSpawnTimer = Math.max(520, 980 - momRespect * 4);
+  }
+
+  for (const guest of momGuests) {
+    guest.y += guest.speed * dt;
+    guest.wobble += dt * 0.006;
+    if (!guest.missed && guest.y > 562) {
+      guest.missed = true;
+      momCringe = Math.min(100, momCringe + guest.cringe);
+      momFeedback = guest.type === "selfie"
+        ? "Story avec maman devant le Moulin: cringe +++"
+        : "Une copine de maman dit 'on est jeunes aussi'.";
+      momFeedbackTimer = 140;
+    }
+  }
+  momGuests = momGuests.filter((guest) => !guest.missed && guest.y < 660);
+
+  if (momCringe >= 100) {
+    momCringe = 45;
+    momRespect = Math.max(0, momRespect - 14);
+    momGuests = [];
+    momFeedback = "Trop de cringe: Johanne respire et relance le filtrage.";
+    momFeedbackTimer = 180;
+  }
+
+  if (momRespect >= 100) {
+    score += 12;
+    completeLevelAndReturnToMap(7, 5);
+  }
+
+  if (momFeedbackTimer > 0) momFeedbackTimer -= 1;
+  input.leftPressed = false;
+  input.rightPressed = false;
+  input.jumpPressed = false;
+  updateHud();
+}
+
+function spawnMomGuest() {
+  const types = [
+    { type: "maman", label: "MAMAN", cringe: 18, speed: 0.12 },
+    { type: "copine", label: "COPINE", cringe: 14, speed: 0.145 },
+    { type: "selfie", label: "SELFIE", cringe: 22, speed: 0.105 },
+    { type: "dance", label: "DANSE", cringe: 16, speed: 0.16 },
+  ];
+  const template = types[Math.floor(Math.random() * types.length)];
+  const lane = Math.floor(Math.random() * 4);
+  momGuests.push({
+    ...template,
+    lane,
+    x: 256 + lane * 246,
+    y: 92,
+    w: 92,
+    h: 98,
+    wobble: Math.random() * 6,
+    missed: false,
+  });
+}
+
+function redirectMomGuest() {
+  const candidate = momGuests
+    .filter((guest) => guest.lane === momLane && guest.y > 130 && guest.y < 585)
+    .sort((a, b) => b.y - a.y)[0];
+
+  if (!candidate) {
+    momCringe = Math.min(100, momCringe + 4);
+    momFeedback = "Personne dans cette zone: Maman gagne du terrain.";
+    momFeedbackTimer = 90;
+    return;
+  }
+
+  candidate.missed = true;
+  momRespect = Math.min(100, momRespect + (candidate.type === "maman" ? 18 : 14));
+  momCringe = Math.max(0, momCringe - 5);
+  score += 2;
+  momFeedback = {
+    maman: "Excuse valide: 'on se retrouve demain, promis'.",
+    copine: "Copine redirigee vers le bar des adultes.",
+    selfie: "Selfie esquive: camera sauvee.",
+    dance: "Danse de maman contournee de justesse.",
+  }[candidate.type];
+  momFeedbackTimer = 150;
+}
+
 function startSassLevel() {
   state = "sass";
   sassRound = 0;
@@ -1326,7 +1451,7 @@ function useParentalApp() {
     parentalFeedback = `Code 6 7 6 7 tape ${parentalCodes}/10.`;
     parentalFeedbackTimer = 120;
     if (parentalCodes % 3 === 0 && parentalStealth <= 0) parentalAlertTimer = 100;
-    if (parentalCodes >= 10) completeLevelAndReturnToMap(7, 5);
+    if (parentalCodes >= 10) completeLevelAndReturnToMap(8, 6);
   }
 }
 
@@ -1378,7 +1503,7 @@ function updateFighterLevel(dt) {
   if (fighterRoundOverTimer > 0) {
     fighterRoundOverTimer -= dt;
     updateFighterEffects(dt);
-    if (fighterRoundOverTimer <= 0) completeLevelAndReturnToMap(8, 6);
+    if (fighterRoundOverTimer <= 0) completeLevelAndReturnToMap(9, 7);
     input.leftPressed = false;
     input.rightPressed = false;
     input.jumpPressed = false;
@@ -1658,7 +1783,7 @@ function updateAyaSpecialLevel(dt) {
     if (ayaClearTimer > 950) {
       score += ayaSpecialScore;
       ayaSpecialScore = 0;
-      completeLevelAndReturnToMap(9, 7);
+      completeLevelAndReturnToMap(10, 8);
     }
   }
 
@@ -1770,6 +1895,7 @@ function startSelectedMapNode() {
   if (node.kind === "platform") startPlatformLevel(node.id);
   if (node.id === "skincare") startSkincareLevel();
   if (node.id === "sass") startSassLevel();
+  if (node.id === "momParty") startMomPartyLevel();
   if (node.id === "parental") startParentalLevel();
   if (node.id === "fighter") startFighterLevel();
   if (node.id === "finale") startAyaSpecialLevel();
@@ -1799,6 +1925,10 @@ function update(dt) {
   }
   if (state === "parental") {
     updateParentalLevel();
+    return;
+  }
+  if (state === "momParty") {
+    updateMomPartyLevel(dt);
     return;
   }
   if (state === "fighter") {
@@ -2141,6 +2271,10 @@ function draw() {
     drawParentalLevel();
     return;
   }
+  if (state === "momParty") {
+    drawMomPartyLevel();
+    return;
+  }
   if (state === "fighter") {
     drawFighterLevel();
     return;
@@ -2397,10 +2531,11 @@ function drawWorldMap() {
   drawMapLandmarkForNode(mapNodes[2], "bubble");
   drawMapLandmarkForNode(mapNodes[3], "mirror");
   drawMapLandmarkForNode(mapNodes[4], "moulin");
-  drawMapLandmarkForNode(mapNodes[5], "phone");
-  drawMapLandmarkForNode(mapNodes[6], "versus");
-  drawMapLandmarkForNode(mapNodes[7], "sky");
-  drawMapLandmarkForNode(mapNodes[8], "video");
+  drawMapLandmarkForNode(mapNodes[5], "mom");
+  drawMapLandmarkForNode(mapNodes[6], "phone");
+  drawMapLandmarkForNode(mapNodes[7], "versus");
+  drawMapLandmarkForNode(mapNodes[8], "sky");
+  drawMapLandmarkForNode(mapNodes[9], "video");
   drawAyaTourBusOnMap();
 
   mapNodes.forEach((node, index) => drawMapNode(node, index));
@@ -2589,6 +2724,26 @@ function drawMapLandmark(x, y, kind) {
     ctx.fillRect(x - 25, y - 86, 50, 82);
     ctx.fillStyle = "#86f7ff";
     ctx.fillRect(x - 18, y - 74, 36, 54);
+  }
+  if (kind === "mom") {
+    ctx.fillStyle = "#ffcf9d";
+    ctx.beginPath();
+    ctx.arc(x, y - 78, 18, 0, Math.PI * 2);
+    ctx.arc(x - 34, y - 62, 13, 0, Math.PI * 2);
+    ctx.arc(x + 34, y - 62, 13, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ff5fb7";
+    ctx.fillRect(x - 20, y - 60, 40, 50);
+    ctx.fillStyle = "#86f7ff";
+    ctx.fillRect(x - 48, y - 48, 28, 36);
+    ctx.fillRect(x + 20, y - 48, 28, 36);
+    ctx.fillStyle = "#4d3428";
+    ctx.fillRect(x - 18, y - 98, 36, 11);
+    ctx.fillStyle = "#f8efd0";
+    ctx.font = "900 14px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("MAMAN?", x, y - 110);
+    ctx.textAlign = "left";
   }
   if (kind === "bubble") {
     ctx.fillStyle = "#f8efd0";
@@ -4936,6 +5091,157 @@ function drawSassOptions() {
   ctx.textAlign = "left";
 }
 
+function drawMomPartyLevel() {
+  ctx.clearRect(0, 0, W, H);
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#101b3f");
+  bg.addColorStop(0.48, "#65316f");
+  bg.addColorStop(1, "#101820");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  for (let x = 40; x < W; x += 160) ctx.fillRect(x, 88 + Math.sin(x) * 20, 74, 5);
+  ctx.fillStyle = "#1f8fb5";
+  ctx.fillRect(0, 474, W, 84);
+  ctx.fillStyle = "rgba(255,255,255,0.3)";
+  for (let x = -20; x < W; x += 120) ctx.fillRect(x + Math.sin(performance.now() * 0.002 + x) * 8, 512, 58, 4);
+  drawMoulinDisco(888);
+
+  const lanes = ["Entree", "Bar", "Dancefloor", "Selfie spot"];
+  for (let i = 0; i < 4; i += 1) {
+    const x = 170 + i * 246;
+    ctx.fillStyle = i === momLane ? "rgba(255, 207, 78, 0.24)" : "rgba(5, 6, 9, 0.22)";
+    ctx.fillRect(x, 120, 190, 470);
+    ctx.strokeStyle = i === momLane ? "#ffcf4e" : "rgba(248,239,208,0.24)";
+    ctx.lineWidth = i === momLane ? 5 : 2;
+    ctx.strokeRect(x + 4, 124, 182, 462);
+    ctx.fillStyle = "#f8efd0";
+    ctx.font = "900 15px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(lanes[i], x + 95, 606);
+  }
+
+  for (const guest of momGuests) drawMomGuest(guest);
+  drawMomJohanneFilter();
+  drawMomPartyHud();
+  drawMomPartyMessage();
+  ctx.textAlign = "left";
+}
+
+function drawMomGuest(guest) {
+  const x = guest.x + Math.sin(guest.wobble) * 8;
+  const y = guest.y;
+  const isMom = guest.type === "maman";
+  const isSelfie = guest.type === "selfie";
+  const isDance = guest.type === "dance";
+  const dress = isMom ? "#ff5fb7" : isSelfie ? "#86f7ff" : isDance ? "#ffcf4e" : "#c8ff4e";
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  ctx.beginPath();
+  ctx.ellipse(46, 86, 34, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#ffcf9d";
+  ctx.beginPath();
+  ctx.roundRect(27, 6, 38, 34, 10);
+  ctx.fill();
+  ctx.fillStyle = isMom ? "#6d3f2f" : "#7a5132";
+  ctx.fillRect(24, 2, 44, 10);
+  ctx.fillStyle = "#101820";
+  ctx.fillRect(35, 19, 5, 5);
+  ctx.fillRect(53, 19, 5, 5);
+  ctx.fillStyle = dress;
+  ctx.beginPath();
+  ctx.roundRect(18, 42, 56, 48, 14);
+  ctx.fill();
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 10px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(guest.label, 46, 70);
+  if (isSelfie) {
+    ctx.fillStyle = "#101820";
+    ctx.fillRect(64, 24, 20, 28);
+    ctx.fillStyle = "#86f7ff";
+    ctx.fillRect(68, 30, 12, 12);
+  }
+  if (isDance) {
+    ctx.fillStyle = "#ffcf4e";
+    ctx.font = "900 22px system-ui";
+    ctx.fillText("♪", 74, 22);
+  }
+  ctx.restore();
+  ctx.textAlign = "left";
+}
+
+function drawMomJohanneFilter() {
+  const x = 170 + momLane * 246 + 95;
+  const y = 548;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = "rgba(0,0,0,0.28)";
+  ctx.beginPath();
+  ctx.ellipse(0, 48, 38, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#7a5132";
+  ctx.fillRect(-19, -10, 38, 44);
+  ctx.fillStyle = "#ffcf9d";
+  ctx.fillRect(-14, -3, 28, 24);
+  ctx.fillStyle = "#2f5f9f";
+  ctx.fillRect(-22, 24, 44, 34);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 11px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("NOPE", 0, 45);
+  ctx.restore();
+  ctx.textAlign = "left";
+}
+
+function drawMomPartyHud() {
+  ctx.fillStyle = "rgba(5, 6, 9, 0.82)";
+  ctx.fillRect(52, 42, 1176, 80);
+  ctx.strokeStyle = "#ffcf4e";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(60, 50, 1160, 64);
+  ctx.fillStyle = "#ffcf4e";
+  ctx.font = "900 26px system-ui";
+  ctx.fillText("Maman s'incruste avec ses copines", 88, 86);
+  drawMomMeter(575, 70, 245, momRespect / 100, "#c8ff4e", "soiree sauvee");
+  drawMomMeter(880, 70, 245, momCringe / 100, "#ff5f67", "cringe");
+}
+
+function drawMomMeter(x, y, w, ratio, color, label) {
+  ctx.fillStyle = "#20313a";
+  ctx.fillRect(x, y, w, 18);
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, w * Math.max(0, Math.min(1, ratio)), 18);
+  ctx.strokeStyle = "#f8efd0";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x, y, w, 18);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 12px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(label, x + w / 2, y + 36);
+  ctx.textAlign = "left";
+}
+
+function drawMomPartyMessage() {
+  const text = momFeedbackTimer > 0
+    ? momFeedback
+    : "< > / Q D: changer de zone   Espace / Entree: rediriger Maman ou une copine";
+  ctx.fillStyle = "rgba(5, 6, 9, 0.8)";
+  ctx.fillRect(228, 642, 824, 48);
+  ctx.strokeStyle = "#ffcf4e";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(234, 648, 812, 36);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 16px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(text, W / 2, 672);
+  ctx.textAlign = "left";
+}
+
 function drawParentalLevel() {
   ctx.clearRect(0, 0, W, H);
   const bg = ctx.createLinearGradient(0, 0, 0, H);
@@ -5185,6 +5491,7 @@ function desiredMusicTrackId() {
   }
   if (state === "skincare") return "skincare";
   if (state === "sass") return "daron";
+  if (state === "momParty") return "fighter";
   if (state === "parental") return "parental";
   if (state === "fighter") return "fighter";
   if (state === "levelVictory") return "aya";
@@ -5367,8 +5674,8 @@ window.addEventListener("keydown", (event) => {
     event.preventDefault();
     input.vannePressed = true;
   }
-  if (event.key === "Enter" && (state === "map" || state === "podcastReward" || state === "levelVictory" || state === "skincare" || state === "sass" || state === "parental" || state === "fighter" || state === "ayaSpecial" || state === "showcaseVideo")) input.jumpPressed = true;
-  if (event.key === "Enter" && state !== "playing" && state !== "map" && state !== "podcastReward" && state !== "levelVictory" && state !== "skincare" && state !== "sass" && state !== "parental" && state !== "fighter" && state !== "ayaSpecial" && state !== "showcaseVideo") resetGame();
+  if (event.key === "Enter" && (state === "map" || state === "podcastReward" || state === "levelVictory" || state === "skincare" || state === "sass" || state === "momParty" || state === "parental" || state === "fighter" || state === "ayaSpecial" || state === "showcaseVideo")) input.jumpPressed = true;
+  if (event.key === "Enter" && state !== "playing" && state !== "map" && state !== "podcastReward" && state !== "levelVictory" && state !== "skincare" && state !== "sass" && state !== "momParty" && state !== "parental" && state !== "fighter" && state !== "ayaSpecial" && state !== "showcaseVideo") resetGame();
 });
 
 window.addEventListener("keyup", (event) => setKey(event.key, false));
