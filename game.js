@@ -27,7 +27,7 @@ const PLAYER_BIG = { w: 46, h: 72 };
 const SHOWCASE_TIKTOK_EMBED = "https://www.tiktok.com/embed/v2/7549905634041466114";
 
 const mapArt = new Image();
-mapArt.src = "./assets/map-douarnenez.png";
+mapArt.src = "./assets/map-douarnenez-isometric.png";
 
 const ayaSpecialArt = new Image();
 ayaSpecialArt.src = "./assets/aya-special-bg.png";
@@ -314,16 +314,16 @@ const podcastReward = {
 };
 
 const mapNodes = [
-  { id: "platform1", kind: "platform", title: "Mario 1", subtitle: "College", x: 184, y: 332, level: 1 },
-  { id: "platform2", kind: "platform", title: "Mario 2", subtitle: "Famille", x: 336, y: 470, level: 2 },
-  { id: "sass", kind: "minigame", title: "Blagues", subtitle: "Daron", x: 488, y: 332, level: 3 },
-  { id: "skincare", kind: "minigame", title: "Make-up", subtitle: "Avant Moulin", x: 640, y: 502, level: 4 },
-  { id: "platform3", kind: "platform", title: "Mario 3", subtitle: "Moulin", x: 794, y: 342, level: 5 },
-  { id: "momParty", kind: "minigame", title: "Maman", subtitle: "S'incruste", x: 928, y: 514, level: 6 },
-  { id: "parental", kind: "minigame", title: "Controle", subtitle: "Telephone", x: 1036, y: 318, level: 7 },
-  { id: "fighter", kind: "minigame", title: "Street Johanne", subtitle: "Taxi Papa", x: 1118, y: 500, level: 8 },
-  { id: "finale", kind: "finale", title: "Special AYA", subtitle: "Rythme", x: 1182, y: 250, level: 9 },
-  { id: "showcase", kind: "video", title: "Showcase", subtitle: "AYA au Moulin", x: 1184, y: 404, level: 10 },
+  { id: "platform1", kind: "platform", title: "Mario 1", subtitle: "College", x: 170, y: 306, level: 1 },
+  { id: "platform2", kind: "platform", title: "Mario 2", subtitle: "Famille", x: 612, y: 588, level: 2 },
+  { id: "sass", kind: "minigame", title: "Blagues", subtitle: "Daron", x: 426, y: 386, level: 3 },
+  { id: "skincare", kind: "minigame", title: "Make-up", subtitle: "Avant Moulin", x: 1142, y: 596, level: 4 },
+  { id: "platform3", kind: "platform", title: "Mario 3", subtitle: "Moulin", x: 1126, y: 270, level: 5 },
+  { id: "momParty", kind: "minigame", title: "Maman", subtitle: "S'incruste", x: 526, y: 214, level: 6 },
+  { id: "parental", kind: "minigame", title: "Controle", subtitle: "Telephone", x: 736, y: 356, level: 7 },
+  { id: "fighter", kind: "minigame", title: "Street Johanne", subtitle: "Taxi Papa", x: 878, y: 462, level: 8 },
+  { id: "finale", kind: "finale", title: "Special AYA", subtitle: "Rythme", x: 982, y: 500, level: 9 },
+  { id: "showcase", kind: "video", title: "Showcase", subtitle: "AYA au Moulin", x: 1174, y: 330, level: 10 },
 ];
 
 const platformRuns = {
@@ -2910,6 +2910,20 @@ function drawCoverImage(image) {
 
 function drawWorldMap() {
   ctx.clearRect(0, 0, W, H);
+
+  if (mapArt.complete && mapArt.naturalWidth > 0) {
+    drawCoverImage(mapArt);
+    drawGeneratedMapOverlay();
+    drawIsometricMapRoute();
+    drawGeneratedMapSiteLabels();
+
+    drawAyaTourBusOnMap();
+    mapNodes.forEach((node, index) => drawMapNode(node, index));
+    drawSelectedMapPanel();
+    drawMapTitlePanel();
+    return;
+  }
+
   const bg = ctx.createLinearGradient(0, 0, 0, H);
   bg.addColorStop(0, "#7fc9e6");
   bg.addColorStop(0.45, "#b9dfc7");
@@ -2936,7 +2950,10 @@ function drawWorldMap() {
 
   mapNodes.forEach((node, index) => drawMapNode(node, index));
   drawSelectedMapPanel();
+  drawMapTitlePanel();
+}
 
+function drawMapTitlePanel() {
   ctx.fillStyle = "rgba(6,10,16,0.7)";
   ctx.fillRect(52, 38, 516, 104);
   ctx.strokeStyle = "rgba(255, 239, 198, 0.78)";
@@ -2951,6 +2968,29 @@ function drawWorldMap() {
   ctx.fillStyle = "#ffcf4e";
   ctx.font = "800 16px system-ui";
   ctx.fillText("Carte de Douarnenez: les univers se revelent au fur et a mesure", 96, 122);
+}
+
+function drawGeneratedMapOverlay() {
+  const shade = ctx.createLinearGradient(0, 0, 0, H);
+  shade.addColorStop(0, "rgba(4, 8, 14, 0.08)");
+  shade.addColorStop(0.48, "rgba(4, 8, 14, 0.02)");
+  shade.addColorStop(1, "rgba(4, 8, 14, 0.18)");
+  ctx.fillStyle = shade;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = "rgba(4, 8, 14, 0.18)";
+  ctx.fillRect(0, 0, W, 150);
+  ctx.fillStyle = "rgba(4, 8, 14, 0.16)";
+  ctx.fillRect(0, 604, W, 116);
+}
+
+function drawGeneratedMapSiteLabels() {
+  drawIsoLabel(162, 256, "College", "#f8efd0");
+  drawIsoLabel(298, 504, "Port-Rhu", "#86f7ff");
+  drawIsoLabel(612, 646, "Plage des Dames", "#f8efd0");
+  drawIsoLabel(736, 282, "Reseau tel", "#86f7ff");
+  drawIsoLabel(1128, 172, "Le Moulin", "#ff5fb7");
+  drawIsoLabel(1012, 454, "Tourbus AYA", "#ffcf4e");
 }
 
 function drawIsometricSea() {
@@ -3467,8 +3507,8 @@ function drawAyaTourBusOnMap() {
   if (!moulinNode) return;
   const t = performance.now() * 0.004;
   const arrival = Math.max(0, Math.min(1, (unlockedLevel - 3) / 2));
-  const x = moulinNode.x - 250 + arrival * 128 + Math.sin(t) * 4;
-  const y = moulinNode.y - 108 + Math.sin(t * 1.7) * 2;
+  const x = 856 + arrival * 156 + Math.sin(t) * 4;
+  const y = 506 - arrival * 118 + Math.sin(t * 1.7) * 2;
 
   ctx.save();
   ctx.globalAlpha = unlockedLevel >= 3 ? 1 : 0.48;
