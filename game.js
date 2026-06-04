@@ -4426,13 +4426,15 @@ function drawGoal() {
 }
 
 function drawPlayer() {
-  if (player.invuln > 0 && Math.floor(player.invuln / 6) % 2 === 0) return;
   const x = player.x;
   const y = player.y;
   const bob = player.onGround ? Math.sin(player.frame * Math.PI * 2) * 2 : 0;
   const bodyScale = player.big ? 1.24 : 1;
 
   ctx.save();
+  if (player.invuln > 0 && Math.floor(player.invuln / 6) % 2 === 0) {
+    ctx.globalAlpha = 0.45;
+  }
   ctx.translate(x + player.w / 2, y + bob);
   ctx.scale(player.facing * bodyScale, bodyScale);
 
