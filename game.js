@@ -4867,10 +4867,8 @@ function drawPronoteEnemy(e) {
   ctx.fill();
   ctx.fillStyle = "#ff5f6d";
   ctx.fillRect(10, 8, e.w - 20, 12);
-  ctx.fillStyle = "#f8efd0";
-  ctx.font = "900 8px system-ui";
-  ctx.textAlign = "center";
-  ctx.fillText("PRONOTE", e.w / 2, 18);
+  ctx.fillStyle = "rgba(248, 239, 208, 0.82)";
+  ctx.fillRect(13, 11, e.w - 26, 6);
   ctx.fillStyle = "#86f7ff";
   ctx.fillRect(12, 26, e.w - 24, 6);
   ctx.fillRect(12, 36, e.w - 30, 5);
@@ -4882,6 +4880,17 @@ function drawPronoteEnemy(e) {
   ctx.fillRect(e.w - 7, 16, 9, 4);
   ctx.textAlign = "left";
   ctx.restore();
+
+  ctx.fillStyle = "rgba(5, 6, 9, 0.82)";
+  ctx.fillRect(e.x - 12, e.y - 17, e.w + 24, 17);
+  ctx.strokeStyle = "#ff5f6d";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(e.x - 10, e.y - 15, e.w + 20, 13);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 10px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("PRONOTE", e.x + e.w / 2, e.y - 5);
+  ctx.textAlign = "left";
 }
 
 function drawPhoneDrone(e) {
