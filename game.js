@@ -1078,8 +1078,10 @@ function startLevelVictory(nextLevel, completedNodeIndex) {
 
 function currentGoal() {
   return {
-    ...level.goal,
     x: activePlatformRun.goalX,
+    y: FLOOR_Y - 328,
+    w: 30,
+    h: 328,
   };
 }
 
@@ -2560,7 +2562,7 @@ function bumpPlatformBlock(platform) {
 
 function playerReachedGoal() {
   const goal = currentGoal();
-  return rectsOverlap(player, goal) || player.x + player.w >= goal.x - 42;
+  return rectsOverlap(player, goal);
 }
 
 function questionBlockPowerType(platform) {
@@ -5401,7 +5403,7 @@ function drawLevelOneTutorial() {
     "Espace / entree / bouton haut: sauter",
     "Side quest: minutes + batterie pour filmer AYA",
     "Evite surveillants, profs, CPE et Directeur",
-    "Va jusqu'au panneau SORTIE pour quitter le college",
+    "Va toucher le grand mat SORTIE pour quitter le college",
   ];
   lines.forEach((line, index) => {
     const y = 190 + index * 26;
@@ -5567,24 +5569,48 @@ function drawNpc(e) {
 function drawGoal() {
   const g = currentGoal();
   const chapter = currentPlatformChapter();
-  const flagY = g.y + 14 + Math.sin(performance.now() * 0.006) * 3;
+  const t = performance.now() * 0.006;
+  const flagY = g.y + 62 + Math.sin(t) * 4;
+  const poleX = g.x + g.w / 2;
 
   ctx.fillStyle = "rgba(7, 10, 12, 0.28)";
-  ctx.fillRect(g.x - 18, FLOOR_Y - 10, 126, 12);
-  ctx.fillStyle = chapter.accent;
-  ctx.fillRect(g.x, g.y, 18, g.h);
+  ctx.fillRect(g.x - 42, FLOOR_Y - 10, 118, 12);
+
   ctx.fillStyle = "#f8efd0";
-  ctx.fillRect(g.x - 8, FLOOR_Y - 20, 34, 20);
+  ctx.fillRect(poleX - 7, g.y, 14, g.h);
+  ctx.fillStyle = "rgba(5, 6, 9, 0.18)";
+  ctx.fillRect(poleX + 4, g.y + 4, 5, g.h - 8);
+
+  ctx.fillStyle = chapter.accent;
+  ctx.beginPath();
+  ctx.arc(poleX, g.y - 10, 18, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#ffcf4e";
+  ctx.beginPath();
+  ctx.arc(poleX, g.y - 10, 8, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#f8efd0";
+  ctx.fillRect(poleX - 21, FLOOR_Y - 28, 42, 28);
+
   ctx.fillStyle = "#ff5fb7";
-  ctx.fillRect(g.x + 18, flagY, 104, 50);
+  ctx.beginPath();
+  ctx.moveTo(poleX + 8, flagY);
+  ctx.lineTo(poleX + 132, flagY + 16);
+  ctx.lineTo(poleX + 98, flagY + 58);
+  ctx.lineTo(poleX + 8, flagY + 46);
+  ctx.closePath();
+  ctx.fill();
+
   ctx.fillStyle = "#101820";
-  ctx.fillRect(g.x + 18, flagY + 42, 104, 8);
+  ctx.fillRect(poleX + 8, flagY + 42, 96, 8);
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 17px system-ui";
-  ctx.fillText(activePlatformRun.goalText, g.x + 29, flagY + 31);
+  ctx.fillText(activePlatformRun.goalText, poleX + 22, flagY + 31);
+
   ctx.fillStyle = "#ffcf4e";
   ctx.font = "900 12px system-ui";
-  ctx.fillText("FIN ->", g.x - 6, g.y - 10);
+  ctx.fillText("TOUCHE LE MAT", poleX - 44, g.y - 36);
 }
 
 function drawPlayer() {
