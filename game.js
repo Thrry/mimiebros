@@ -4431,9 +4431,10 @@ function drawEnemies() {
 function drawFamilyCat(e, cat) {
   const t = performance.now() * 0.006 + e.x;
   const nap = cat === "duduche";
-  const body = nap ? "#101214" : "#f8efd0";
-  const patch = nap ? "#24272a" : "#d98242";
+  const body = nap ? "#101214" : "#8a5a35";
+  const patch = nap ? "#24272a" : "#f4d6ac";
   const patch2 = nap ? "#050609" : "#20272f";
+  const patch3 = "#c87832";
   const label = nap ? "DUDUCHE" : "COCA";
   const y = e.y + Math.sin(t) * (nap ? 0.6 : 2.5);
 
@@ -4455,6 +4456,11 @@ function drawFamilyCat(e, cat) {
     ctx.beginPath();
     ctx.ellipse(e.x + 39, y + 28, 10, 9, 0.3, 0, Math.PI * 2);
     ctx.fill();
+    ctx.fillStyle = patch3;
+    ctx.fillRect(e.x + 24, y + 13, 18, 8);
+    ctx.fillRect(e.x + 31, y + 19, 14, 9);
+    ctx.fillStyle = "#f8efd0";
+    ctx.fillRect(e.x + 27, y + 31, 12, 6);
   }
 
   ctx.fillStyle = body;
@@ -4470,13 +4476,33 @@ function drawFamilyCat(e, cat) {
   ctx.lineTo(e.x + 31, y + 9);
   ctx.fill();
 
-  ctx.strokeStyle = body;
+  if (!nap) {
+    ctx.fillStyle = "#f4d6ac";
+    ctx.fillRect(e.x + 5, y + 13, 10, 12);
+    ctx.fillRect(e.x + 13, y + 23, 9, 6);
+    ctx.fillStyle = "#20272f";
+    ctx.fillRect(e.x + 22, y + 7, 10, 14);
+    ctx.fillStyle = "#c87832";
+    ctx.fillRect(e.x + 13, y + 4, 9, 9);
+    ctx.fillStyle = "#f8efd0";
+    ctx.fillRect(e.x + 16, y + 18, 6, 7);
+  }
+
+  ctx.strokeStyle = nap ? body : "#7a4a2d";
   ctx.lineWidth = 6;
   ctx.beginPath();
   const tailLift = nap ? 6 : Math.sin(t * 2) * 9;
   ctx.moveTo(e.x + 50, y + 18);
   ctx.quadraticCurveTo(e.x + 65, y + 4 + tailLift, e.x + 52, y - 4 + tailLift);
   ctx.stroke();
+  if (!nap) {
+    ctx.strokeStyle = "#20272f";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(e.x + 56, y + 10 + tailLift * 0.45);
+    ctx.quadraticCurveTo(e.x + 62, y + 2 + tailLift, e.x + 54, y - 2 + tailLift);
+    ctx.stroke();
+  }
 
   ctx.fillStyle = nap ? "#9fe87a" : "#20313a";
   ctx.fillRect(e.x + 11, y + 14, 4, 4);
