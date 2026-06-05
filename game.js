@@ -1202,6 +1202,22 @@ function stompDefeatsEnemy(enemy) {
   return ["pronote", "detention", "notebookNote"].includes(enemy.kind);
 }
 
+function stompPenalizesEnemy(enemy) {
+  return ["supervisor", "teacher", "cpe", "principal", "parent", "bouncer"].includes(enemy.kind);
+}
+
+function stompEnemyPenalty(enemy) {
+  const labels = {
+    supervisor: "surveillant",
+    teacher: "prof",
+    cpe: "CPE",
+    principal: "directeur",
+    parent: "parent",
+    bouncer: "videur",
+  };
+  return { points: 5, text: `${labels[enemy.kind] || "humain"}: -5 min` };
+}
+
 function stompEnemyReward(enemy) {
   if (enemy.kind === "pronote") return { points: 5, text: "PRONOTE efface +5" };
   if (enemy.kind === "detention") return { points: 4, text: "COLLE esquivee +4" };
@@ -2551,6 +2567,16 @@ function update(dt) {
       }
       const stomp = player.vy > 4 && player.y + player.h - enemy.y < 24;
       if (stomp) {
+        if (stompPenalizesEnemy(enemy)) {
+          const penalty = stompEnemyPenalty(enemy);
+          score = Math.max(0, score - penalty.points);
+          addFloat(penalty.text, enemy.x + enemy.w / 2, enemy.y, "#ff7777");
+          player.vy = JUMP * 0.48;
+          player.vx += enemy.vx * 0.75;
+          player.invuln = Math.max(player.invuln, 28);
+          updateHud();
+          continue;
+        }
         const reward = stompEnemyReward(enemy);
         score += reward.points;
         addFloat(reward.text, enemy.x + enemy.w / 2, enemy.y, "#f2dc85");
