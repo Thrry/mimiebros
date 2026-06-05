@@ -25,7 +25,7 @@ const JUMP = -19.2;
 const PLAYER_SMALL = { w: 34, h: 54 };
 const PLAYER_BIG = { w: 46, h: 72 };
 const MANGO_POWER_FRAMES = 600;
-const SHOWCASE_TIKTOK_EMBED = "https://www.tiktok.com/embed/v2/7549905634041466114";
+const SHOWCASE_TIKTOK_EMBED = "https://www.tiktok.com/player/v1/7549905634041466114?controls=1&progress_bar=1&play_button=1&volume_control=1&fullscreen_button=1&timestamp=1&music_info=0&description=0&rel=0";
 
 const mapArt = new Image();
 mapArt.src = "./assets/map-douarnenez-isometric.png";
