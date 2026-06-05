@@ -103,7 +103,7 @@ const musicTracks = [
   },
   {
     id: "daron",
-    name: "Daron jokes",
+    name: "Discussion familiale",
     beatMs: 136,
     root: 36,
     leadRoot: 64,
@@ -329,12 +329,12 @@ const podcastReward = {
   host: "Maghla",
 };
 
-const SASS_REPLY_ADVANCE_FRAMES = 75;
-const SASS_TARGET_SCORE = 7;
+const SASS_REPLY_ADVANCE_FRAMES = 42;
+const SASS_TARGET_SCORE = 9;
 
 const mapNodes = [
   { id: "platform1", kind: "platform", title: "Mario 1", subtitle: "College", x: 170, y: 286, level: 1 },
-  { id: "sass", kind: "minigame", title: "Blagues", subtitle: "Darons", x: 322, y: 354, level: 2 },
+  { id: "sass", kind: "minigame", title: "Discussion", subtitle: "Familiale", x: 322, y: 354, level: 2 },
   { id: "parental", kind: "minigame", title: "Controle", subtitle: "Telephone", x: 478, y: 408, level: 3 },
   { id: "platform2", kind: "platform", title: "Mario 2", subtitle: "Famille", x: 638, y: 450, level: 4 },
   { id: "skincare", kind: "minigame", title: "Make-up", subtitle: "Avant Moulin", x: 790, y: 392, level: 5 },
@@ -474,6 +474,46 @@ const sassRounds = [
       { text: "Oui, je me depeche.", points: 1, feedback: "+1: timing accepte." },
       { text: "Dix minutes ado ou dix minutes adulte ?", points: -1, feedback: "-1: negociation dangereuse." },
       { text: "Le temps est une construction sociale.", points: -2, feedback: "-2: philosophie punitive." },
+    ],
+  },
+  {
+    parent: "Tu peux nous raconter ta journee sans grogner ?",
+    options: [
+      { text: "Oui, c'etait normal, je raconte.", points: 1, feedback: "+1: conversation familiale debloquee." },
+      { text: "Il s'est rien passe.", points: -1, feedback: "-1: mur adolescent active." },
+      { text: "Tu veux le replay avec commentaires ?", points: -2, feedback: "-2: sarcasme trop charge." },
+    ],
+  },
+  {
+    parent: "Tu peux arreter de repondre 'j'arrive' depuis vingt minutes ?",
+    options: [
+      { text: "Oui, j'arrive vraiment.", points: 1, feedback: "+1: promesse presque credible." },
+      { text: "J'etais en train d'arriver dans ma tete.", points: -1, feedback: "-1: logique floue mais audacieuse." },
+      { text: "C'est toi qui surveilles le GPS de ma chambre ?", points: -2, feedback: "-2: insolence geolocalisee." },
+    ],
+  },
+  {
+    parent: "Tu peux dire bonjour correctement ?",
+    options: [
+      { text: "Bonjour, ca va ?", points: 1, feedback: "+1: politesse simple, effet maximum." },
+      { text: "J'ai dit bonjour avec les yeux.", points: -1, feedback: "-1: salutation invisible." },
+      { text: "Faut un formulaire pour dire bonjour ?", points: -2, feedback: "-2: administration du drama." },
+    ],
+  },
+  {
+    parent: "Tu peux ranger les produits de la salle de bain ?",
+    options: [
+      { text: "Oui, je range tout apres.", points: 1, feedback: "+1: salle de bain sauvee." },
+      { text: "C'est une installation artistique.", points: -1, feedback: "-1: musee du lavabo." },
+      { text: "Le chaos fait partie de ma routine.", points: -2, feedback: "-2: skincare anarchique." },
+    ],
+  },
+  {
+    parent: "Tu peux repondre sans souffler ?",
+    options: [
+      { text: "Oui, pardon.", points: 1, feedback: "+1: souffle coupe au bon moment." },
+      { text: "Je respire juste fort.", points: -1, feedback: "-1: meteo orageuse." },
+      { text: "Vous voulez controler l'air aussi ?", points: -2, feedback: "-2: tempete familiale." },
     ],
   },
 ];
@@ -1012,7 +1052,7 @@ function updateHud() {
     return;
   }
   if (state === "sass") {
-    zoneEl.textContent = "Blagues darons";
+    zoneEl.textContent = "Discussion familiale";
     scoreEl.textContent = score;
     heartsEl.textContent = `${sassScore}/${SASS_TARGET_SCORE}`;
     return;
@@ -1856,8 +1896,8 @@ function startSassLevel() {
   sassRound = 0;
   sassSelected = 0;
   sassScore = 0;
-  sassFeedback = "Niveau 2: les darons demandent des trucs simples. Objectif: au moins 7 points.";
-  sassFeedbackTimer = 260;
+  sassFeedback = "Niveau 2: discussion familiale. Choisis la reponse qui calme le jeu. Objectif: 9 points.";
+  sassFeedbackTimer = 180;
   sassAdvanceTimer = 0;
   updateHud();
   syncMusicToState();
@@ -6591,7 +6631,7 @@ function drawSassPrompt() {
   ctx.fillText(`Round ${Math.min(sassRound + 1, sassRounds.length)}/${sassRounds.length}`, 330, 98);
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 24px system-ui";
-  wrapText(`Darons: "${round.parent}"`, 330, 132, 610, 30);
+  wrapText(`Famille: "${round.parent}"`, 330, 132, 610, 30);
 
   ctx.fillStyle = "rgba(14,20,24,0.74)";
   ctx.fillRect(78, 72, 176, 86);
@@ -6619,14 +6659,14 @@ function drawSassOptions() {
   });
 
   const feedback = sassAdvanceTimer > 0
-    ? `${sassFeedback}  Lecture...`
-    : sassFeedbackTimer > 0 ? sassFeedback : "Gauche/droite, puis saut pour choisir la meilleure reponse.";
+    ? `${sassFeedback}  Suite...`
+    : sassFeedbackTimer > 0 ? sassFeedback : "Gauche/droite, puis saut pour choisir la reponse qui calme le jeu.";
   ctx.fillStyle = "rgba(14,20,24,0.76)";
-  ctx.fillRect(390, 212, 500, 54);
+  ctx.fillRect(330, 210, 620, 62);
   ctx.fillStyle = "#86f7ff";
-  ctx.font = "900 17px system-ui";
+  ctx.font = "900 16px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText(feedback, W / 2, 246);
+  wrapText(feedback, W / 2, 238, 560, 20);
   ctx.textAlign = "left";
 }
 
