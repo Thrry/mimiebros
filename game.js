@@ -2275,12 +2275,12 @@ function johanneVanneAttack() {
   fighterProjectiles.push({
     owner: "johanne",
     x: fighterJohanne.x + fighterJohanne.facing * 34,
-    y: 426,
-    w: 260,
-    h: 48,
-    vx: fighterJohanne.facing * 6.4,
+    y: 386,
+    w: 382,
+    h: 76,
+    vx: fighterJohanne.facing * 2.45,
     text: line,
-    life: 150,
+    life: 240,
   });
   addFighterEffect("vanne", fighterJohanne.x + fighterJohanne.facing * 72, 432, "#ffd8ef");
   fighterFeedback = "Johanne balance une vanne.";
@@ -4471,15 +4471,13 @@ function drawDadProjectile(projectile) {
   ctx.fillStyle = "rgba(5, 6, 9, 0.88)";
   ctx.fillRect(projectile.x, projectile.y, projectile.w, projectile.h);
   ctx.strokeStyle = isJohanne ? "#ffd8ef" : "#86f7ff";
-  ctx.lineWidth = isJohanne ? 3 : 4;
+  ctx.lineWidth = 4;
   ctx.strokeRect(projectile.x + 2, projectile.y + 2, projectile.w - 4, projectile.h - 4);
-  if (!isJohanne) {
-    ctx.fillStyle = "rgba(134, 247, 255, 0.12)";
-    ctx.fillRect(projectile.x + 7, projectile.y + 7, projectile.w - 14, projectile.h - 14);
-  }
+  ctx.fillStyle = isJohanne ? "rgba(255, 216, 239, 0.12)" : "rgba(134, 247, 255, 0.12)";
+  ctx.fillRect(projectile.x + 7, projectile.y + 7, projectile.w - 14, projectile.h - 14);
   ctx.fillStyle = isJohanne ? "#ffd8ef" : "#f8efd0";
-  ctx.font = isJohanne ? "900 12px system-ui" : "900 14px system-ui";
-  wrapText(projectile.text, projectile.x + 14, projectile.y + 22, projectile.w - 28, isJohanne ? 15 : 18);
+  ctx.font = "900 14px system-ui";
+  wrapText(projectile.text, projectile.x + 14, projectile.y + 22, projectile.w - 28, 18);
   ctx.textAlign = "left";
 }
 
