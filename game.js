@@ -332,16 +332,16 @@ const SASS_REPLY_ADVANCE_FRAMES = 75;
 const SASS_TARGET_SCORE = 7;
 
 const mapNodes = [
-  { id: "platform1", kind: "platform", title: "Mario 1", subtitle: "College", x: 170, y: 306, level: 1 },
-  { id: "platform2", kind: "platform", title: "Mario 2", subtitle: "Famille", x: 612, y: 588, level: 2 },
-  { id: "sass", kind: "minigame", title: "Reponses", subtitle: "Parents", x: 426, y: 386, level: 3 },
-  { id: "skincare", kind: "minigame", title: "Make-up", subtitle: "Avant Moulin", x: 1142, y: 596, level: 4 },
-  { id: "platform3", kind: "platform", title: "Mario 3", subtitle: "Moulin", x: 1126, y: 270, level: 5 },
-  { id: "momParty", kind: "minigame", title: "Maman", subtitle: "S'incruste", x: 526, y: 214, level: 6 },
-  { id: "parental", kind: "minigame", title: "Controle", subtitle: "Telephone", x: 736, y: 356, level: 7 },
-  { id: "fighter", kind: "minigame", title: "Street Johanne", subtitle: "Taxi Papa", x: 878, y: 462, level: 8 },
-  { id: "finale", kind: "finale", title: "Special AYA", subtitle: "Rythme", x: 982, y: 500, level: 9 },
-  { id: "showcase", kind: "video", title: "Showcase", subtitle: "AYA au Moulin", x: 1174, y: 330, level: 10 },
+  { id: "platform1", kind: "platform", title: "Mario 1", subtitle: "College", x: 170, y: 286, level: 1 },
+  { id: "platform2", kind: "platform", title: "Mario 2", subtitle: "Famille", x: 322, y: 354, level: 2 },
+  { id: "sass", kind: "minigame", title: "Reponses", subtitle: "Parents", x: 478, y: 408, level: 3 },
+  { id: "skincare", kind: "minigame", title: "Make-up", subtitle: "Avant Moulin", x: 638, y: 450, level: 4 },
+  { id: "platform3", kind: "platform", title: "Mario 3", subtitle: "Moulin", x: 790, y: 392, level: 5 },
+  { id: "momParty", kind: "minigame", title: "Maman", subtitle: "S'incruste", x: 910, y: 324, level: 6 },
+  { id: "parental", kind: "minigame", title: "Controle", subtitle: "Telephone", x: 1002, y: 386, level: 7 },
+  { id: "fighter", kind: "minigame", title: "Street Johanne", subtitle: "Taxi Papa", x: 1072, y: 454, level: 8 },
+  { id: "finale", kind: "finale", title: "Special AYA", subtitle: "Rythme", x: 1140, y: 492, level: 9 },
+  { id: "showcase", kind: "video", title: "Showcase", subtitle: "AYA au Moulin", x: 1146, y: 382, level: 10 },
 ];
 
 const platformRuns = {
