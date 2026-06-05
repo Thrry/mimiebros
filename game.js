@@ -37,6 +37,9 @@ ayaQueenArt.src = "./assets/aya-queen-sky.png";
 const ayaMoulinFinalArt = new Image();
 ayaMoulinFinalArt.src = "./assets/aya-moulin-final.png";
 
+const sophieMomSprite = new Image();
+sophieMomSprite.src = "./assets/sophie-8bit.png";
+
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 let musicTimer = null;
@@ -6685,7 +6688,7 @@ function drawMomGuest(guest) {
   ctx.save();
   ctx.translate(x, y);
   if (isMom) {
-    drawMomPortraitSprite(46, 48, guest.label);
+    drawSophieMomSprite(46, 100, guest.label);
     ctx.restore();
     ctx.textAlign = "left";
     return;
@@ -6725,6 +6728,30 @@ function drawMomGuest(guest) {
   }
   ctx.restore();
   ctx.textAlign = "left";
+}
+
+function drawSophieMomSprite(cx, footY, label) {
+  ctx.fillStyle = "rgba(0,0,0,0.28)";
+  ctx.beginPath();
+  ctx.ellipse(cx, footY - 6, 44, 11, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (sophieMomSprite.complete && sophieMomSprite.naturalWidth > 0) {
+    const height = 176;
+    const width = height * (sophieMomSprite.naturalWidth / sophieMomSprite.naturalHeight);
+    const previousSmoothing = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(sophieMomSprite, cx - width / 2, footY - height, width, height);
+    ctx.imageSmoothingEnabled = previousSmoothing;
+  } else {
+    drawMomPortraitSprite(cx, footY - 52, label);
+    return;
+  }
+
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 10px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(label, cx, footY + 9);
 }
 
 function drawMomPortraitSprite(cx, cy, label) {
