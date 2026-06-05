@@ -40,6 +40,9 @@ ayaMoulinFinalArt.src = "./assets/aya-moulin-final.png";
 const sophieMomSprite = new Image();
 sophieMomSprite.src = "./assets/sophie-8bit.png";
 
+const fighterApartmentBg = new Image();
+fighterApartmentBg.src = "./assets/fighter-apartment-bg.png";
+
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 let musicTimer = null;
@@ -822,6 +825,8 @@ let fighterCombo = 0;
 let fighterDadJokeIndex = 0;
 let fighterVanneIndex = 0;
 let fighterTopLeTimer = 0;
+let fighterMomAssistTimer = 0;
+let fighterMomAssistActive = 0;
 let mangoSpeedTimer = 0;
 let mangoInvincibleTimer = 0;
 let godCodeBuffer = "";
@@ -925,6 +930,8 @@ function resetGame() {
   fighterDadJokeIndex = 0;
   fighterVanneIndex = 0;
   fighterTopLeTimer = 0;
+  fighterMomAssistTimer = 0;
+  fighterMomAssistActive = 0;
   mangoSpeedTimer = 0;
   mangoInvincibleTimer = 0;
   capitalQuizQuestions = [];
@@ -2086,13 +2093,15 @@ function startFighterLevel() {
   fighterEffects = [];
   fighterTimer = 99;
   fighterAiTimer = 0;
-  fighterFeedback = "Gagne le droit que Papa amene les enfants en voiture au Moulin.";
+  fighterFeedback = "Gagne le droit que Papa amene Johanne en voiture au Moulin.";
   fighterFeedbackTimer = 170;
   fighterRoundOverTimer = 0;
   fighterCombo = 0;
   fighterDadJokeIndex = 0;
   fighterVanneIndex = 0;
   fighterTopLeTimer = 2600;
+  fighterMomAssistTimer = 0;
+  fighterMomAssistActive = 0;
   updateHud();
   syncMusicToState();
 }
@@ -2150,6 +2159,7 @@ function updateFighterLevel(dt) {
 
   updateFighterTopLe(dt);
   updateDadFighterAi(dt);
+  updateFighterMomAssist(dt);
   updateFighterBody(fighterJohanne, dt);
   updateFighterBody(fighterDad, dt);
   resolveFighterSpacing();
@@ -2157,7 +2167,7 @@ function updateFighterLevel(dt) {
   updateFighterEffects(dt);
 
   if (fighterTimer <= 0) {
-    if (fighterJohanne.health >= fighterDad.health) finishFighterRound("PAPA CEDE: tout le monde monte en voiture pour le Moulin.");
+    if (fighterJohanne.health >= fighterDad.health) finishFighterRound("PAPA CEDE: Johanne a son taxi pour le Moulin.");
     else continueFighterRound("PAPA DIT NON: trop de jeux de mots. Continue.");
   }
 
@@ -2201,6 +2211,22 @@ function updateFighterTopLe(dt) {
   if (fighterTopLeTimer > 0) return;
   addFighterEffect("toplé toplé toplé", fighterJohanne.x + fighterJohanne.w / 2, fighterJohanne.y - 36, "#ffd8ef", 82);
   fighterTopLeTimer = 6000 + Math.random() * 4200;
+}
+
+function updateFighterMomAssist(dt) {
+  if (!fighterDad || fighterRoundOverTimer > 0) return;
+  if (fighterMomAssistTimer > 0) fighterMomAssistTimer -= dt;
+  if (fighterMomAssistActive > 0) fighterMomAssistActive -= dt;
+
+  const dadLow = fighterDad.health > 0 && fighterDad.health / fighterDad.maxHealth <= 0.34;
+  if (!dadLow || fighterMomAssistTimer > 0) return;
+
+  fighterMomAssistActive = 3900;
+  fighterMomAssistTimer = 11200;
+  fighterDad.health = Math.min(fighterDad.maxHealth, fighterDad.health + 13);
+  addFighterEffect("Sophie aide Papa", fighterDad.x - 58, 390, "#c8ff4e", 96, -0.35);
+  fighterFeedback = "Sophie arrive: 'laisse ton pere finir sa phrase'. Papa reprend un peu de vie.";
+  fighterFeedbackTimer = 170;
 }
 
 function johanneTickleAttack() {
@@ -2260,32 +2286,32 @@ function updateDadFighterAi(dt) {
   if (fighterAiTimer <= 0 && fighterDad.cooldown <= 0) {
     if (distance < 150) dadAccentAttack();
     else dadPunProjectile();
-    fighterAiTimer = 1400 + Math.random() * 900;
+    fighterAiTimer = 2600 + Math.random() * 1500;
   }
 }
 
 function dadPunProjectile() {
   fighterDad.attackTimer = 220;
-  fighterDad.cooldown = 1250;
+  fighterDad.cooldown = 2300;
   const line = fighterDadJokes[fighterDadJokeIndex % fighterDadJokes.length];
   fighterDadJokeIndex += 1;
   fighterProjectiles.push({
     owner: "dad",
     x: fighterDad.x + fighterDad.facing * 38,
-    y: 426,
-    w: 300,
-    h: 54,
-    vx: fighterDad.facing * 5,
+    y: 386,
+    w: 382,
+    h: 76,
+    vx: fighterDad.facing * 2.45,
     text: line,
-    life: 120,
+    life: 240,
   });
   fighterFeedback = "Papa resiste avec une blague de daron.";
-  fighterFeedbackTimer = 80;
+  fighterFeedbackTimer = 125;
 }
 
 function dadAccentAttack() {
   fighterDad.attackTimer = 280;
-  fighterDad.cooldown = 760;
+  fighterDad.cooldown = 1320;
   fighterDad.specialTimer = 260;
   const distance = Math.abs((fighterJohanne.x + fighterJohanne.w / 2) - (fighterDad.x + fighterDad.w / 2));
   addFighterEffect("accent du sud", fighterDad.x + fighterDad.facing * 70, 438, "#86f7ff");
@@ -2360,6 +2386,8 @@ function continueFighterRound(text) {
   fighterDad.attackKind = "";
   fighterTimer = 99;
   fighterCombo = 0;
+  fighterMomAssistTimer = 4200;
+  fighterMomAssistActive = 0;
   fighterProjectiles = [];
   fighterFeedback = text;
   fighterFeedbackTimer = 170;
@@ -4037,6 +4065,7 @@ function drawFighterLevel() {
   drawFighterHud();
   drawFighterInstructions();
   for (const projectile of fighterProjectiles) drawDadProjectile(projectile);
+  if (fighterMomAssistActive > 0) drawFighterMomAssist();
   if (fighterDad) drawFighterDad(fighterDad);
   if (fighterJohanne) drawFighterJohanne(fighterJohanne);
   drawFighterEffects();
@@ -4044,42 +4073,107 @@ function drawFighterLevel() {
 }
 
 function drawFighterArena() {
-  ctx.fillStyle = "rgba(255,255,255,0.12)";
-  for (let x = 40; x < W; x += 190) ctx.fillRect(x, 120 + Math.sin(x) * 12, 78, 5);
-
-  ctx.fillStyle = "#102533";
-  ctx.fillRect(0, 368, W, 210);
-  ctx.fillStyle = "#2d8fb2";
-  ctx.fillRect(0, 428, W, 118);
-  for (let x = -40; x < W + 80; x += 140) {
-    ctx.fillStyle = "rgba(255,255,255,0.32)";
-    ctx.fillRect(x + Math.sin(performance.now() * 0.001 + x) * 10, 476, 68, 4);
+  if (fighterApartmentBg.complete && fighterApartmentBg.naturalWidth > 0) {
+    const scale = Math.max(W / fighterApartmentBg.naturalWidth, H / fighterApartmentBg.naturalHeight);
+    const width = fighterApartmentBg.naturalWidth * scale;
+    const height = fighterApartmentBg.naturalHeight * scale;
+    const previousSmoothing = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(fighterApartmentBg, (W - width) / 2, (H - height) / 2, width, height);
+    ctx.imageSmoothingEnabled = previousSmoothing;
+  } else {
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, "#201818");
+    bg.addColorStop(0.54, "#5f4132");
+    bg.addColorStop(1, "#2b1d16");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
   }
 
-  drawFishingBoat(72, 380, "#f2d67a");
-  drawFishingBoat(1015, 396, "#d94f45");
-  drawMoulinDisco(880);
-  drawDadTaxiCar(518, 432);
+  ctx.fillStyle = "rgba(5, 6, 9, 0.12)";
+  ctx.fillRect(0, 548, W, 172);
+  ctx.fillStyle = "rgba(255, 207, 78, 0.1)";
+  ctx.fillRect(128, 602, 1024, 8);
+  drawFighterPrizeKeys();
+  drawFighterFamilyPortrait();
+}
 
-  ctx.fillStyle = "#151a20";
-  ctx.fillRect(0, 558, W, 162);
-  ctx.fillStyle = "#343b48";
-  for (let x = 0; x < W; x += 82) {
-    ctx.fillRect(x, 558, 64, 20);
-    ctx.fillStyle = x % 164 === 0 ? "#475363" : "#343b48";
-  }
-  ctx.fillStyle = "#222a34";
-  for (let y = 582; y < H; y += 34) {
-    for (let x = (y % 68) - 40; x < W; x += 92) ctx.fillRect(x, y, 72, 18);
-  }
+function drawFighterPrizeKeys() {
+  const t = performance.now() * 0.004;
+  const x = W / 2 - 26;
+  const y = 254 + Math.sin(t * 1.4) * 5;
 
-  ctx.fillStyle = "rgba(5, 6, 9, 0.5)";
-  ctx.fillRect(90, 504, 1100, 24);
-  ctx.fillStyle = "#ffcf4e";
-  ctx.font = "900 28px system-ui";
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(Math.sin(t) * 0.55);
+  ctx.shadowColor = "#ffcf4e";
+  ctx.shadowBlur = 18;
+  ctx.strokeStyle = "#ffcf4e";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(0, 0, 18, 0, Math.PI * 2);
+  ctx.moveTo(16, 0);
+  ctx.lineTo(58, -8);
+  ctx.lineTo(66, -18);
+  ctx.moveTo(48, -6);
+  ctx.lineTo(56, 8);
+  ctx.stroke();
+  ctx.strokeStyle = "#f8efd0";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(10, -34, 24, 24);
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = "#f8efd0";
+  for (let i = 0; i < 6; i += 1) {
+    const angle = t + i * Math.PI / 3;
+    const radius = 44 + (i % 2) * 10;
+    ctx.fillRect(Math.cos(angle) * radius - 2, Math.sin(angle) * radius - 2, 4, 4);
+  }
+  ctx.restore();
+}
+
+function drawFighterFamilyPortrait() {
+  const x = 1082;
+  const y = 54;
+  ctx.save();
+  ctx.fillStyle = "rgba(12, 8, 8, 0.88)";
+  ctx.fillRect(x, y, 144, 104);
+  ctx.strokeStyle = "#8b5a31";
+  ctx.lineWidth = 7;
+  ctx.strokeRect(x + 3, y + 3, 138, 98);
+  ctx.strokeStyle = "#ffcf4e";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x + 14, y + 14, 116, 76);
+
+  drawFamilyPortraitHead(x + 44, y + 55, "#d9b177", "#6d543c", "P");
+  drawFamilyPortraitHead(x + 72, y + 42, "#f1b4a2", "#b9c2bd", "S");
+  drawFamilyPortraitHead(x + 101, y + 58, "#ffcf9d", "#9a6b43", "J");
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 9px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText("STREET JOHANNE - TAXI POUR LE MOULIN", W / 2, 516);
+  ctx.fillText("NOUS 3", x + 72, y + 88);
+  ctx.restore();
   ctx.textAlign = "left";
+}
+
+function drawFamilyPortraitHead(x, y, skin, hair, initial) {
+  ctx.fillStyle = hair;
+  ctx.fillRect(x - 14, y - 17, 28, 24);
+  ctx.fillStyle = skin;
+  ctx.fillRect(x - 11, y - 12, 22, 22);
+  ctx.fillStyle = "#101820";
+  ctx.fillRect(x - 6, y - 4, 3, 3);
+  ctx.fillRect(x + 4, y - 4, 3, 3);
+  ctx.fillStyle = "#8f4d4d";
+  ctx.fillRect(x - 4, y + 7, 8, 2);
+  ctx.fillStyle = "#2f6f8f";
+  ctx.fillRect(x - 13, y + 13, 26, 18);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 8px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(initial, x, y + 26);
 }
 
 function drawDadTaxiCar(x, y) {
@@ -4165,7 +4259,7 @@ function drawFighterInstructions() {
   ctx.fillStyle = "#ffcf4e";
   ctx.font = "900 16px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText("BUT: convaincre Papa d'amener les enfants au Moulin en voiture", W / 2, 154);
+  ctx.fillText("STREET JOHANNE: convaincre Papa d'amener Johanne au Moulin", W / 2, 154);
   ctx.fillStyle = "#f8efd0";
   ctx.font = "800 14px system-ui";
   ctx.fillText("< > / Q D: bouger   ESPACE / ENTREE: chatouilles   X: vanne", W / 2, 177);
@@ -4306,6 +4400,44 @@ function drawFighterDad(f) {
   ctx.restore();
 }
 
+function drawFighterMomAssist() {
+  if (!fighterDad) return;
+  const fade = Math.min(1, fighterMomAssistActive / 520);
+  const x = Math.max(880, Math.min(1136, fighterDad.x + 118));
+  const footY = 610;
+
+  ctx.save();
+  ctx.globalAlpha = fade;
+  ctx.fillStyle = "rgba(5, 6, 9, 0.28)";
+  ctx.beginPath();
+  ctx.ellipse(x, footY - 4, 42, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (sophieMomSprite.complete && sophieMomSprite.naturalWidth > 0) {
+    const height = 150;
+    const width = height * (sophieMomSprite.naturalWidth / sophieMomSprite.naturalHeight);
+    const previousSmoothing = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(sophieMomSprite, x - width / 2, footY - height, width, height);
+    ctx.imageSmoothingEnabled = previousSmoothing;
+  } else {
+    drawFamilyPortraitHead(x, footY - 118, "#f1b4a2", "#b9c2bd", "S");
+  }
+
+  ctx.fillStyle = "rgba(5, 6, 9, 0.84)";
+  ctx.fillRect(x - 128, footY - 190, 256, 54);
+  ctx.strokeStyle = "#c8ff4e";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(x - 122, footY - 184, 244, 42);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 13px system-ui";
+  ctx.textAlign = "center";
+  wrapText("Sophie: laissez-moi gerer 2 secondes.", x, footY - 166, 218, 15);
+  ctx.restore();
+  ctx.globalAlpha = 1;
+  ctx.textAlign = "left";
+}
+
 function drawReadableMirroredText(text, x, y, facing) {
   if (facing === 1) {
     ctx.fillText(text, x, y);
@@ -4322,11 +4454,15 @@ function drawDadProjectile(projectile) {
   ctx.fillStyle = "rgba(5, 6, 9, 0.88)";
   ctx.fillRect(projectile.x, projectile.y, projectile.w, projectile.h);
   ctx.strokeStyle = isJohanne ? "#ffd8ef" : "#86f7ff";
-  ctx.lineWidth = 3;
+  ctx.lineWidth = isJohanne ? 3 : 4;
   ctx.strokeRect(projectile.x + 2, projectile.y + 2, projectile.w - 4, projectile.h - 4);
+  if (!isJohanne) {
+    ctx.fillStyle = "rgba(134, 247, 255, 0.12)";
+    ctx.fillRect(projectile.x + 7, projectile.y + 7, projectile.w - 14, projectile.h - 14);
+  }
   ctx.fillStyle = isJohanne ? "#ffd8ef" : "#f8efd0";
-  ctx.font = "900 12px system-ui";
-  wrapText(projectile.text, projectile.x + 12, projectile.y + 20, projectile.w - 24, 15);
+  ctx.font = isJohanne ? "900 12px system-ui" : "900 14px system-ui";
+  wrapText(projectile.text, projectile.x + 14, projectile.y + 22, projectile.w - 28, isJohanne ? 15 : 18);
   ctx.textAlign = "left";
 }
 
@@ -4349,12 +4485,12 @@ function drawFighterMessage() {
   ctx.lineWidth = 3;
   ctx.strokeRect(262, 642, 756, 42);
   ctx.fillStyle = "#f8efd0";
-  ctx.font = "900 17px system-ui";
+  ctx.font = "900 16px system-ui";
   ctx.textAlign = "center";
   const text = fighterFeedbackTimer > 0 || fighterRoundOverTimer > 0
     ? fighterFeedback
-    : "Convaincs Papa: chatouilles ou vannes, puis tout le monde en voiture.";
-  ctx.fillText(text, W / 2, 670);
+    : "Convaincs Papa: chatouilles ou vannes, puis taxi pour Johanne.";
+  wrapText(text, W / 2, 666, 700, 19);
   ctx.textAlign = "left";
 }
 
