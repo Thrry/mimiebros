@@ -129,7 +129,7 @@ const musicTracks = [
   },
   {
     id: "parental",
-    name: "Tel 6 7",
+    name: "Telephone",
     beatMs: 104,
     root: 38,
     leadRoot: 70,
@@ -331,6 +331,8 @@ const podcastReward = {
 
 const SASS_REPLY_ADVANCE_FRAMES = 42;
 const SASS_TARGET_SCORE = 9;
+const PARENTAL_UNLOCK_CODE = "777777";
+const PARENTAL_REQUIRED_CLUES = 1;
 
 const mapNodes = [
   { id: "platform1", kind: "platform", title: "Mario 1", subtitle: "College", x: 170, y: 286, level: 1 },
@@ -1675,7 +1677,7 @@ function startParentalLevel() {
   parentalCodeInput = "";
   parentalComputerOpen = false;
   parentalStealth = 0;
-  parentalFeedback = "Niveau 3: trouve les indices dans Actu, puis tape le code 10 fois.";
+  parentalFeedback = "Niveau 3: fouille vite Actu/WhatsApp, puis tape le code sur l'ordi.";
   parentalFeedbackTimer = 180;
   parentalAlertTimer = 0;
   zoneEl.textContent = "Controle parental";
@@ -1977,27 +1979,24 @@ function useParentalApp() {
   const app = parentalApps[parentalSelected];
 
   if (app.id === "actu") {
-    if (parentalVideos < 4) {
+    if (parentalVideos < PARENTAL_REQUIRED_CLUES) {
       parentalVideos += 1;
       score += 2;
       parentalFeedback = [
-        "Actu 1: une video cache '6'.",
-        "Actu 2: une danse cache '7'.",
-        "Actu 3: une story dit 'encore 6'.",
-        "Actu 4: dernier indice, evidemment c'est 7.",
+        "Actu: une story repete le meme chiffre. Juste une fois, presque trop discret.",
       ][parentalVideos - 1];
     } else {
-      parentalFeedback = "Tu as deja les 4 indices: 6 7 6 7.";
+      parentalFeedback = "Actu: rien de nouveau. Le motif est deja passe.";
     }
-    parentalFeedbackTimer = 170;
+    parentalFeedbackTimer = 145;
     return;
   }
 
   if (app.id === "whatsapp") {
-    parentalFeedback = parentalVideos >= 4
-      ? "WhatsApp: le groupe valide le plan. Code: 6 7 6 7, dix fois sans paniquer."
-      : "WhatsApp: 'regarde Actu avant, y'a les indices dedans'.";
-    parentalFeedbackTimer = 170;
+    parentalFeedback = parentalVideos >= PARENTAL_REQUIRED_CLUES
+      ? "WhatsApp: 'six fois le chiffre porte-bonheur et on sort'."
+      : "WhatsApp: 'check Actu, y'a un minuscule indice'.";
+    parentalFeedbackTimer = 145;
     return;
   }
 
@@ -2010,8 +2009,8 @@ function useParentalApp() {
   }
 
   if (app.id === "codes") {
-    if (parentalVideos < 4) {
-      parentalFeedback = "Ordinateur bloque: il manque des indices dans Actu.";
+    if (parentalVideos < PARENTAL_REQUIRED_CLUES) {
+      parentalFeedback = "Ordinateur bloque: il manque un petit indice.";
       parentalFeedbackTimer = 150;
       parentalAlertTimer = 70;
       return;
@@ -2019,8 +2018,8 @@ function useParentalApp() {
 
     parentalComputerOpen = true;
     parentalCodeInput = "";
-    parentalFeedback = "Ordinateur ouvert: tape 6767 puis Entree. Echap pour fermer.";
-    parentalFeedbackTimer = 220;
+    parentalFeedback = "Ordinateur ouvert: tape le code, Entree valide, Echap ferme.";
+    parentalFeedbackTimer = 170;
   }
 }
 
@@ -2028,15 +2027,15 @@ function handleParentalComputerKey(key) {
   if (state !== "parental" || !parentalComputerOpen) return false;
 
   if (/^[0-9]$/.test(key)) {
-    parentalCodeInput = `${parentalCodeInput}${key}`.slice(0, 4);
-    parentalFeedback = `Code saisi: ${parentalCodeInput.padEnd(4, "_")}`;
+    parentalCodeInput = `${parentalCodeInput}${key}`.slice(0, PARENTAL_UNLOCK_CODE.length);
+    parentalFeedback = `Code saisi: ${parentalCodeInput.padEnd(PARENTAL_UNLOCK_CODE.length, "_")}`;
     parentalFeedbackTimer = 80;
     return true;
   }
 
   if (key === "Backspace") {
     parentalCodeInput = parentalCodeInput.slice(0, -1);
-    parentalFeedback = `Code saisi: ${parentalCodeInput.padEnd(4, "_")}`;
+    parentalFeedback = `Code saisi: ${parentalCodeInput.padEnd(PARENTAL_UNLOCK_CODE.length, "_")}`;
     parentalFeedbackTimer = 80;
     return true;
   }
@@ -2058,10 +2057,10 @@ function handleParentalComputerKey(key) {
 }
 
 function submitParentalComputerCode() {
-  if (parentalCodeInput !== "6767") {
+  if (parentalCodeInput !== PARENTAL_UNLOCK_CODE) {
     parentalAlertTimer = parentalStealth > 0 ? 0 : 95;
-    parentalFeedback = parentalCodeInput.length < 4
-      ? "Il manque des chiffres: il faut taper 6767."
+    parentalFeedback = parentalCodeInput.length < PARENTAL_UNLOCK_CODE.length
+      ? "Il manque des chiffres."
       : "Mauvais code: l'ordinateur fait bip trop fort.";
     parentalFeedbackTimer = 150;
     parentalCodeInput = "";
@@ -2071,13 +2070,10 @@ function submitParentalComputerCode() {
   parentalCodes += 1;
   score += 1;
   parentalCodeInput = "";
-  parentalFeedback = `Code 6767 valide ${parentalCodes}/10. Retape-le encore.`;
+  parentalFeedback = "Code valide: controle parental contourne.";
   parentalFeedbackTimer = 130;
-  if (parentalCodes % 3 === 0 && parentalStealth <= 0) parentalAlertTimer = 100;
-  if (parentalCodes >= 10) {
-    parentalComputerOpen = false;
-    completeLevelAndReturnToMap(4, 2);
-  }
+  parentalComputerOpen = false;
+  completeLevelAndReturnToMap(4, 2);
 }
 
 function startFighterLevel() {
@@ -7125,7 +7121,7 @@ function drawPhoneHeader() {
   ctx.fillText("Niveau 3 - Controle parental", W / 2, 112);
   ctx.fillStyle = "#86f7ff";
   ctx.font = "800 15px system-ui";
-  ctx.fillText("Recupere les indices dans Actu, ouvre l'ordi, puis tape 6767 dix fois.", W / 2, 140);
+  ctx.fillText("Trouve un indice discret, ouvre l'ordi, puis tente le code.", W / 2, 140);
   ctx.textAlign = "left";
 }
 
@@ -7156,8 +7152,8 @@ function drawParentalStatus() {
   ctx.fillRect(454, 502, 372, 94);
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 18px system-ui";
-  ctx.fillText(`Indices Actu: ${parentalVideos}/4`, 482, 535);
-  ctx.fillText(`Codes valides: ${parentalCodes}/10`, 482, 568);
+  ctx.fillText(`Indice discret: ${parentalVideos}/${PARENTAL_REQUIRED_CLUES}`, 482, 535);
+  ctx.fillText(`Code ordi: ${parentalCodes > 0 ? "valide" : "a trouver"}`, 482, 568);
   ctx.fillStyle = parentalStealth > 0 ? "#86f7ff" : "#b9c2bd";
   ctx.fillText(parentalStealth > 0 ? "Mode discret actif" : "Mode discret inactif", 482, 590);
 }
@@ -7184,15 +7180,15 @@ function drawParentalComputer() {
 
   ctx.fillStyle = "#c8ff4e";
   ctx.font = "900 42px monospace";
-  const display = parentalCodeInput.padEnd(4, "_").split("").join(" ");
+  const display = parentalCodeInput.padEnd(PARENTAL_UNLOCK_CODE.length, "_").split("").join(" ");
   ctx.fillText(display, 640, 302);
 
   ctx.fillStyle = "#f8efd0";
   ctx.font = "800 15px system-ui";
-  ctx.fillText(`Code valide: ${parentalCodes}/10`, 640, 392);
+  ctx.fillText(parentalCodes > 0 ? "Code valide" : "Code inconnu", 640, 392);
   ctx.fillStyle = "#b9c2bd";
   ctx.font = "800 13px system-ui";
-  ctx.fillText("Tape 6767 au clavier, Entree valide, Backspace corrige, Echap ferme.", 640, 424);
+  ctx.fillText("Tape le code au clavier. Entree valide, Backspace corrige, Echap ferme.", 640, 424);
 
   ctx.fillStyle = "#20313a";
   ctx.fillRect(528, 470, 224, 18);
@@ -7205,7 +7201,7 @@ function drawParentalFeedback() {
   const text = parentalFeedbackTimer > 0
     ? parentalFeedback
     : parentalComputerOpen
-      ? "Tape le code trouve dans Actu directement sur l'ordinateur."
+      ? "Tape le code directement sur l'ordinateur."
       : "Choisis une app avec gauche/droite, valide avec saut.";
   ctx.fillStyle = "rgba(14, 20, 24, 0.86)";
   ctx.fillRect(84, 168, 260, 190);
