@@ -292,7 +292,7 @@ const europeCapitals = [
 const parentalApps = [
   { id: "actu", name: "Actu", icon: "▶", color: "#ff5f6d" },
   { id: "whatsapp", name: "WhatsApp", icon: "WA", color: "#49c56b" },
-  { id: "codes", name: "Codes", icon: "10x", color: "#86f7ff" },
+  { id: "codes", name: "Ordi codes", icon: "PC", color: "#86f7ff" },
   { id: "silent", name: "Mode discret", icon: "zzz", color: "#ffd35a" },
 ];
 
@@ -729,6 +729,8 @@ let productHuntFeedbackTimer = 0;
 let parentalSelected = 0;
 let parentalVideos = 0;
 let parentalCodes = 0;
+let parentalCodeInput = "";
+let parentalComputerOpen = false;
 let parentalStealth = 0;
 let parentalFeedback = "";
 let parentalFeedbackTimer = 0;
@@ -830,6 +832,8 @@ function resetGame() {
   parentalSelected = 0;
   parentalVideos = 0;
   parentalCodes = 0;
+  parentalCodeInput = "";
+  parentalComputerOpen = false;
   parentalStealth = 0;
   parentalFeedback = "";
   parentalFeedbackTimer = 0;
@@ -1619,6 +1623,8 @@ function startParentalLevel() {
   parentalSelected = 0;
   parentalVideos = 0;
   parentalCodes = 0;
+  parentalCodeInput = "";
+  parentalComputerOpen = false;
   parentalStealth = 0;
   parentalFeedback = "Niveau 7: trouve les indices dans Actu, puis tape le code 10 fois.";
   parentalFeedbackTimer = 180;
@@ -1889,6 +1895,16 @@ function chooseSassReply() {
 }
 
 function updateParentalLevel() {
+  if (parentalComputerOpen) {
+    input.leftPressed = false;
+    input.rightPressed = false;
+    input.jumpPressed = false;
+    if (parentalFeedbackTimer > 0) parentalFeedbackTimer -= 1;
+    if (parentalAlertTimer > 0) parentalAlertTimer -= 1;
+    if (parentalStealth > 0) parentalStealth -= 1;
+    return;
+  }
+
   if (input.leftPressed) {
     parentalSelected = (parentalSelected + parentalApps.length - 1) % parentalApps.length;
   }
@@ -1946,18 +1962,72 @@ function useParentalApp() {
 
   if (app.id === "codes") {
     if (parentalVideos < 4) {
-      parentalFeedback = "Code refuse: il manque des indices dans Actu.";
+      parentalFeedback = "Ordinateur bloque: il manque des indices dans Actu.";
       parentalFeedbackTimer = 150;
       parentalAlertTimer = 70;
       return;
     }
 
-    parentalCodes += 1;
-    score += 1;
-    parentalFeedback = `Code 6 7 6 7 tape ${parentalCodes}/10.`;
-    parentalFeedbackTimer = 120;
-    if (parentalCodes % 3 === 0 && parentalStealth <= 0) parentalAlertTimer = 100;
-    if (parentalCodes >= 10) completeLevelAndReturnToMap(8, 6);
+    parentalComputerOpen = true;
+    parentalCodeInput = "";
+    parentalFeedback = "Ordinateur ouvert: tape 6767 puis Entree. Echap pour fermer.";
+    parentalFeedbackTimer = 220;
+  }
+}
+
+function handleParentalComputerKey(key) {
+  if (state !== "parental" || !parentalComputerOpen) return false;
+
+  if (/^[0-9]$/.test(key)) {
+    parentalCodeInput = `${parentalCodeInput}${key}`.slice(0, 4);
+    parentalFeedback = `Code saisi: ${parentalCodeInput.padEnd(4, "_")}`;
+    parentalFeedbackTimer = 80;
+    return true;
+  }
+
+  if (key === "Backspace") {
+    parentalCodeInput = parentalCodeInput.slice(0, -1);
+    parentalFeedback = `Code saisi: ${parentalCodeInput.padEnd(4, "_")}`;
+    parentalFeedbackTimer = 80;
+    return true;
+  }
+
+  if (key === "Escape") {
+    parentalComputerOpen = false;
+    parentalCodeInput = "";
+    parentalFeedback = "Ordinateur ferme.";
+    parentalFeedbackTimer = 90;
+    return true;
+  }
+
+  if (key === "Enter") {
+    submitParentalComputerCode();
+    return true;
+  }
+
+  return false;
+}
+
+function submitParentalComputerCode() {
+  if (parentalCodeInput !== "6767") {
+    parentalAlertTimer = parentalStealth > 0 ? 0 : 95;
+    parentalFeedback = parentalCodeInput.length < 4
+      ? "Il manque des chiffres: il faut taper 6767."
+      : "Mauvais code: l'ordinateur fait bip trop fort.";
+    parentalFeedbackTimer = 150;
+    parentalCodeInput = "";
+    return;
+  }
+
+  parentalCodes += 1;
+  score += 1;
+  parentalCodeInput = "";
+  parentalFeedback = `Code 6767 valide ${parentalCodes}/10. Retape-le encore.`;
+  parentalFeedbackTimer = 130;
+  if (parentalCodes % 3 === 0 && parentalStealth <= 0) parentalAlertTimer = 100;
+  if (parentalCodes >= 10) {
+    parentalComputerOpen = false;
+    completeLevelAndReturnToMap(8, 6);
   }
 }
 
@@ -6960,6 +7030,7 @@ function drawParentalLevel() {
   drawPhoneHeader();
   drawPhoneApps();
   drawParentalStatus();
+  drawParentalComputer();
   drawParentalFeedback();
   drawParentalAlert();
 }
@@ -6968,10 +7039,10 @@ function drawPhoneHeader() {
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 24px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText("Niveau 6 - Controle parental", W / 2, 112);
+  ctx.fillText("Niveau 7 - Controle parental", W / 2, 112);
   ctx.fillStyle = "#86f7ff";
   ctx.font = "800 15px system-ui";
-  ctx.fillText("Recupere les indices dans Actu, puis tape le code 10 fois.", W / 2, 140);
+  ctx.fillText("Recupere les indices dans Actu, ouvre l'ordi, puis tape 6767 dix fois.", W / 2, 140);
   ctx.textAlign = "left";
 }
 
@@ -7003,13 +7074,56 @@ function drawParentalStatus() {
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 18px system-ui";
   ctx.fillText(`Indices Actu: ${parentalVideos}/4`, 482, 535);
-  ctx.fillText(`Codes tapes: ${parentalCodes}/10`, 482, 568);
+  ctx.fillText(`Codes valides: ${parentalCodes}/10`, 482, 568);
   ctx.fillStyle = parentalStealth > 0 ? "#86f7ff" : "#b9c2bd";
   ctx.fillText(parentalStealth > 0 ? "Mode discret actif" : "Mode discret inactif", 482, 590);
 }
 
+function drawParentalComputer() {
+  if (!parentalComputerOpen) return;
+
+  ctx.fillStyle = "rgba(3, 6, 9, 0.82)";
+  ctx.fillRect(438, 170, 404, 300);
+  ctx.strokeStyle = "#86f7ff";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(444, 176, 392, 288);
+
+  ctx.fillStyle = "#0b1115";
+  ctx.fillRect(474, 214, 332, 154);
+  ctx.strokeStyle = "#2f6f8f";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(482, 222, 316, 138);
+
+  ctx.fillStyle = "#86f7ff";
+  ctx.font = "900 17px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("ORDI CONTROLE PARENTAL", 640, 204);
+
+  ctx.fillStyle = "#c8ff4e";
+  ctx.font = "900 42px monospace";
+  const display = parentalCodeInput.padEnd(4, "_").split("").join(" ");
+  ctx.fillText(display, 640, 302);
+
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "800 15px system-ui";
+  ctx.fillText(`Code valide: ${parentalCodes}/10`, 640, 392);
+  ctx.fillStyle = "#b9c2bd";
+  ctx.font = "800 13px system-ui";
+  ctx.fillText("Tape 6767 au clavier, Entree valide, Backspace corrige, Echap ferme.", 640, 424);
+
+  ctx.fillStyle = "#20313a";
+  ctx.fillRect(528, 470, 224, 18);
+  ctx.fillStyle = "#101820";
+  ctx.fillRect(552, 488, 176, 16);
+  ctx.textAlign = "left";
+}
+
 function drawParentalFeedback() {
-  const text = parentalFeedbackTimer > 0 ? parentalFeedback : "Choisis une app avec gauche/droite, valide avec saut.";
+  const text = parentalFeedbackTimer > 0
+    ? parentalFeedback
+    : parentalComputerOpen
+      ? "Tape le code trouve dans Actu directement sur l'ordinateur."
+      : "Choisis une app avec gauche/droite, valide avec saut.";
   ctx.fillStyle = "rgba(14, 20, 24, 0.86)";
   ctx.fillRect(84, 168, 260, 190);
   ctx.fillStyle = "#ffcf4e";
@@ -7361,6 +7475,10 @@ function setKey(key, value) {
 
 window.addEventListener("keydown", (event) => {
   startMusic();
+  if (handleParentalComputerKey(event.key)) {
+    event.preventDefault();
+    return;
+  }
   handleGodCodeKey(event.key);
   if (state === "capitalQuiz" && ["ArrowUp", "w", "z"].includes(event.key)) {
     event.preventDefault();
