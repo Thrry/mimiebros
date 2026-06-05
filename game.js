@@ -329,11 +329,12 @@ const podcastReward = {
 };
 
 const SASS_REPLY_ADVANCE_FRAMES = 75;
+const SASS_TARGET_SCORE = 7;
 
 const mapNodes = [
   { id: "platform1", kind: "platform", title: "Mario 1", subtitle: "College", x: 170, y: 306, level: 1 },
   { id: "platform2", kind: "platform", title: "Mario 2", subtitle: "Famille", x: 612, y: 588, level: 2 },
-  { id: "sass", kind: "minigame", title: "Blagues", subtitle: "Daron", x: 426, y: 386, level: 3 },
+  { id: "sass", kind: "minigame", title: "Reponses", subtitle: "Parents", x: 426, y: 386, level: 3 },
   { id: "skincare", kind: "minigame", title: "Make-up", subtitle: "Avant Moulin", x: 1142, y: 596, level: 4 },
   { id: "platform3", kind: "platform", title: "Mario 3", subtitle: "Moulin", x: 1126, y: 270, level: 5 },
   { id: "momParty", kind: "minigame", title: "Maman", subtitle: "S'incruste", x: 526, y: 214, level: 6 },
@@ -403,45 +404,94 @@ const platformChapters = {
 
 const sassRounds = [
   {
-    parent: "Je connais une blague sur les magasins, mais elle n'a pas supermarche.",
+    parent: "Tu peux mettre ton assiette dans le lave-vaisselle ?",
     options: [
-      { text: "Elle etait presque drole.", points: -3, feedback: "Trop gentille: -3 min. Papa prend confiance." },
-      { text: "Elle a surtout pas super ri.", points: 2, feedback: "Bonne esquive." },
-      { text: "Ta blague est en liquidation judiciaire.", points: 4, feedback: "Daron touche en plein ego." },
+      { text: "Oui, deux secondes.", points: 1, feedback: "+1: effort de reponse normale." },
+      { text: "Bah elle est pas si sale.", points: -1, feedback: "-1: mauvaise foi reperee." },
+      { text: "C'est ton projet de vie le lave-vaisselle ?", points: -2, feedback: "-2: insolence niveau boss." },
     ],
   },
   {
-    parent: "Tu sais pourquoi les plongeurs plongent en arriere ?",
+    parent: "Tu as range ton sac pour demain ?",
     options: [
-      { text: "Pourquoi ?", points: -2, feedback: "Erreur: tu as relance Papa." },
-      { text: "Parce que devant c'est trop mainstream ?", points: 3, feedback: "Contre-blague valide." },
-      { text: "Parce que sinon ils tombent dans ton niveau d'humour.", points: 4, feedback: "KO technique." },
+      { text: "Je le fais maintenant.", points: 1, feedback: "+1: miracle organisationnel." },
+      { text: "Je sais ou sont mes trucs.", points: -1, feedback: "-1: phrase suspecte." },
+      { text: "Respire, c'est un sac pas une centrale nucleaire.", points: -2, feedback: "-2: alerte ado maximale." },
     ],
   },
   {
-    parent: "Je vais faire une imitation de l'accent du sud.",
+    parent: "Tu peux baisser un peu le son ?",
     options: [
-      { text: "Vas-y.", points: -2, feedback: "Tu l'as autorise. Grave erreur." },
-      { text: "Encore une saison ?", points: 3, feedback: "Ca pique." },
-      { text: "Ton accent a besoin de sous-titres.", points: 4, feedback: "Maximum ado." },
+      { text: "Oui, je baisse.", points: 1, feedback: "+1: paix domestique." },
+      { text: "C'est meme pas fort.", points: -1, feedback: "-1: debat inutile lance." },
+      { text: "Tes oreilles ont le controle parental ?", points: -2, feedback: "-2: vanne dangereuse." },
     ],
   },
   {
-    parent: "Je suis fatigue, j'ai fait trop de jeux de mots.",
+    parent: "Tu peux mettre ton manteau ? Il fait froid.",
     options: [
-      { text: "Repose-toi.", points: -3, feedback: "Trop sympa: -3 min." },
-      { text: "Enfin une bonne nouvelle.", points: 3, feedback: "Daron destabilise." },
-      { text: "Le silence, ton meilleur sketch.", points: 4, feedback: "Micro drop domestique." },
+      { text: "Ok, je le prends.", points: 1, feedback: "+1: survie thermique acceptee." },
+      { text: "J'ai pas froid.", points: -1, feedback: "-1: classique mais risque." },
+      { text: "T'es devenue la meteo maintenant ?", points: -2, feedback: "-2: froideur relationnelle." },
     ],
   },
   {
-    parent: "Derniere blague, promis.",
+    parent: "Tu peux envoyer un message quand tu arrives ?",
     options: [
-      { text: "Promis ?", points: -4, feedback: "Tu y crois encore: -4 min." },
-      { text: "Cette phrase est deja une blague.", points: 3, feedback: "Bonne insolence." },
-      { text: "On sauvegarde avant le boss final ?", points: 4, feedback: "Parfaitement irrespectueux." },
+      { text: "Oui, je vous ecris.", points: 1, feedback: "+1: parents rassures." },
+      { text: "Si j'y pense.", points: -1, feedback: "-1: confiance en chute libre." },
+      { text: "Je pars pas en mission spatiale.", points: -2, feedback: "-2: NASA du drama." },
     ],
   },
+  {
+    parent: "Tu peux poser ton telephone deux minutes ?",
+    options: [
+      { text: "Ok, je finis et je pose.", points: 1, feedback: "+1: compromis credible." },
+      { text: "Je fais un truc important.", points: -1, feedback: "-1: definition floue de important." },
+      { text: "Vous etes jaloux de mon ecran ?", points: -2, feedback: "-2: provocation pixelisee." },
+    ],
+  },
+  {
+    parent: "Tu as fait tes devoirs ?",
+    options: [
+      { text: "Oui, il me reste juste a verifier.", points: 1, feedback: "+1: reponse responsable." },
+      { text: "A peu pres.", points: -1, feedback: "-1: zone grise." },
+      { text: "Pronote ment souvent, tu sais.", points: -2, feedback: "-2: complot scolaire." },
+    ],
+  },
+  {
+    parent: "Tu peux vider la poubelle ?",
+    options: [
+      { text: "Oui, j'y vais.", points: 1, feedback: "+1: action simple, victoire simple." },
+      { text: "Pourquoi toujours moi ?", points: -1, feedback: "-1: dramaturgie de cuisine." },
+      { text: "La poubelle et moi on est en froid.", points: -2, feedback: "-2: refus artistique." },
+    ],
+  },
+  {
+    parent: "Tu peux etre prete dans dix minutes ?",
+    options: [
+      { text: "Oui, je me depeche.", points: 1, feedback: "+1: timing accepte." },
+      { text: "Dix minutes ado ou dix minutes adulte ?", points: -1, feedback: "-1: negociation dangereuse." },
+      { text: "Le temps est une construction sociale.", points: -2, feedback: "-2: philosophie punitive." },
+    ],
+  },
+];
+
+const fighterDadJokes = [
+  "Je connais une blague sur les magasins, mais elle n'a pas supermarche.",
+  "Tu sais pourquoi les plongeurs plongent en arriere ?",
+  "Je vais faire une imitation de l'accent du sud.",
+  "Je suis fatigue, j'ai fait trop de jeux de mots.",
+  "Derniere blague, promis.",
+];
+
+const fighterJohanneVannes = [
+  "Elle a surtout pas super ri.",
+  "Ta blague est en liquidation judiciaire.",
+  "Parce que sinon ils tombent dans ton niveau d'humour.",
+  "Ton accent a besoin de sous-titres.",
+  "Le silence, ton meilleur sketch.",
+  "On sauvegarde avant le boss final ?",
 ];
 
 const zones = [
@@ -955,9 +1005,9 @@ function updateHud() {
     return;
   }
   if (state === "sass") {
-    zoneEl.textContent = "Blague de daron";
+    zoneEl.textContent = "Reponses parents";
     scoreEl.textContent = score;
-    heartsEl.textContent = player.hearts;
+    heartsEl.textContent = `${sassScore}/${SASS_TARGET_SCORE}`;
     return;
   }
   if (state === "podcastReward") {
@@ -1775,7 +1825,7 @@ function startSassLevel() {
   sassRound = 0;
   sassSelected = 0;
   sassScore = 0;
-  sassFeedback = "Niveau 3: Papa lance ses blagues, reponds le plus mal possible.";
+  sassFeedback = "Niveau 3: les parents demandent des trucs simples. Objectif: au moins 7 points.";
   sassFeedbackTimer = 260;
   sassAdvanceTimer = 0;
   updateHud();
@@ -1793,9 +1843,16 @@ function updateSassLevel() {
       sassRound += 1;
       sassSelected = 0;
       if (sassRound >= sassRounds.length) {
-        score += sassScore;
-        score = Math.max(0, score);
-        completeLevelAndReturnToMap(4, 2);
+        if (sassScore >= SASS_TARGET_SCORE) {
+          score += sassScore;
+          completeLevelAndReturnToMap(4, 2);
+        } else {
+          sassRound = 0;
+          sassSelected = 0;
+          sassScore = 0;
+          sassFeedback = "Pas assez de points: il faut essayer de bien repondre. On recommence.";
+          sassFeedbackTimer = 240;
+        }
       }
     }
   }
@@ -2047,10 +2104,7 @@ function johanneVanneAttack() {
 }
 
 function nextFighterVanneLine() {
-  const lines = sassRounds.flatMap((round) => round.options)
-    .filter((option) => option.points > 0)
-    .map((option) => option.text);
-  const line = lines[fighterVanneIndex % lines.length];
+  const line = fighterJohanneVannes[fighterVanneIndex % fighterJohanneVannes.length];
   fighterVanneIndex += 1;
   return line;
 }
@@ -2072,7 +2126,7 @@ function updateDadFighterAi(dt) {
 function dadPunProjectile() {
   fighterDad.attackTimer = 220;
   fighterDad.cooldown = 580;
-  const line = sassRounds[fighterDadJokeIndex % sassRounds.length].parent;
+  const line = fighterDadJokes[fighterDadJokeIndex % fighterDadJokes.length];
   fighterDadJokeIndex += 1;
   fighterProjectiles.push({
     owner: "dad",
@@ -6352,7 +6406,7 @@ function drawSassDad(x, y) {
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 16px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText("PAPA", x, y + 4);
+  ctx.fillText("PARENTS", x, y + 4);
   ctx.textAlign = "left";
   ctx.fillStyle = "#ffcf4e";
   ctx.font = "900 30px system-ui";
@@ -6368,11 +6422,11 @@ function drawDaronMeter(x, y) {
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 16px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText("Daron", x, y - 76);
-  ctx.fillText("meter", x, y - 54);
-  for (let i = 0; i < 5; i += 1) {
-    ctx.fillStyle = i < sassRound ? "#ff5fb7" : "#31404a";
-    ctx.fillRect(x - 44 + i * 22, y - 24, 16, 70);
+  ctx.fillText("Score", x, y - 76);
+  ctx.fillText(`/ ${SASS_TARGET_SCORE}`, x, y - 54);
+  for (let i = 0; i < SASS_TARGET_SCORE; i += 1) {
+    ctx.fillStyle = i < Math.max(0, sassScore) ? "#c8ff4e" : "#31404a";
+    ctx.fillRect(x - 54 + i * 16, y - 24, 11, 70);
   }
   ctx.textAlign = "left";
 }
@@ -6409,16 +6463,16 @@ function drawSassPrompt() {
   ctx.fillText(`Round ${Math.min(sassRound + 1, sassRounds.length)}/${sassRounds.length}`, 330, 98);
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 24px system-ui";
-  wrapText(`Papa: "${round.parent}"`, 330, 132, 610, 30);
+  wrapText(`Parents: "${round.parent}"`, 330, 132, 610, 30);
 
   ctx.fillStyle = "rgba(14,20,24,0.74)";
   ctx.fillRect(78, 72, 176, 86);
   ctx.fillStyle = "#ffd8ef";
   ctx.font = "900 18px system-ui";
-  ctx.fillText("Insolence", 104, 106);
+  ctx.fillText("Points", 104, 106);
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 36px system-ui";
-  ctx.fillText(String(sassScore), 104, 145);
+  ctx.fillText(`${sassScore}/${SASS_TARGET_SCORE}`, 104, 145);
 }
 
 function drawSassOptions() {
@@ -6438,7 +6492,7 @@ function drawSassOptions() {
 
   const feedback = sassAdvanceTimer > 0
     ? `${sassFeedback}  Lecture...`
-    : sassFeedbackTimer > 0 ? sassFeedback : "Gauche/droite, puis saut pour envoyer la dinguerie.";
+    : sassFeedbackTimer > 0 ? sassFeedback : "Gauche/droite, puis saut pour choisir la meilleure reponse.";
   ctx.fillStyle = "rgba(14,20,24,0.76)";
   ctx.fillRect(390, 212, 500, 54);
   ctx.fillStyle = "#86f7ff";
