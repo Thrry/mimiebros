@@ -3778,19 +3778,28 @@ function drawMapLandmark(x, y, kind) {
     ctx.fillRect(x - 18, y - 74, 36, 54);
   }
   if (kind === "mom") {
-    ctx.fillStyle = "#ffcf9d";
+    ctx.fillStyle = "#747a7e";
+    ctx.beginPath();
+    ctx.arc(x, y - 82, 25, 0, Math.PI * 2);
+    ctx.arc(x - 24, y - 70, 16, 0, Math.PI * 2);
+    ctx.arc(x + 24, y - 70, 16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#c9cccb";
+    ctx.beginPath();
+    ctx.arc(x - 18, y - 91, 8, 0, Math.PI * 2);
+    ctx.arc(x + 18, y - 90, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#f1b4a2";
     ctx.beginPath();
     ctx.arc(x, y - 78, 18, 0, Math.PI * 2);
-    ctx.arc(x - 34, y - 62, 13, 0, Math.PI * 2);
-    ctx.arc(x + 34, y - 62, 13, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "#ff5fb7";
+    ctx.fillStyle = "#2f6f8f";
     ctx.fillRect(x - 20, y - 60, 40, 50);
+    ctx.fillStyle = "#ffd8ef";
+    ctx.fillRect(x - 12, y - 57, 24, 15);
     ctx.fillStyle = "#86f7ff";
     ctx.fillRect(x - 48, y - 48, 28, 36);
     ctx.fillRect(x + 20, y - 48, 28, 36);
-    ctx.fillStyle = "#4d3428";
-    ctx.fillRect(x - 18, y - 98, 36, 11);
     ctx.fillStyle = "#f8efd0";
     ctx.font = "900 14px system-ui";
     ctx.textAlign = "center";
@@ -6635,58 +6644,79 @@ function drawMomGuest(guest) {
 function drawMomPortraitSprite(cx, cy, label) {
   ctx.fillStyle = "rgba(0,0,0,0.25)";
   ctx.beginPath();
-  ctx.ellipse(cx, cy + 40, 42, 11, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx, cy + 48, 48, 12, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = "#5d6265";
-  ctx.fillRect(cx - 39, cy - 48, 78, 72);
-  ctx.fillStyle = "#8b9092";
-  ctx.fillRect(cx - 47, cy - 34, 22, 70);
-  ctx.fillRect(cx + 25, cy - 34, 22, 70);
-  ctx.fillStyle = "#c5c9c8";
-  ctx.fillRect(cx - 45, cy - 42, 14, 74);
-  ctx.fillRect(cx + 31, cy - 42, 14, 74);
-  ctx.fillRect(cx - 26, cy - 52, 18, 18);
-  ctx.fillRect(cx + 8, cy - 52, 18, 18);
-  ctx.fillStyle = "#3d302a";
-  ctx.fillRect(cx - 30, cy - 44, 20, 13);
-  ctx.fillRect(cx + 10, cy - 44, 18, 13);
-
-  ctx.fillStyle = "#f2b6a2";
+  ctx.fillStyle = "#54575b";
   ctx.beginPath();
-  ctx.roundRect(cx - 30, cy - 30, 60, 54, 18);
+  ctx.ellipse(cx, cy - 18, 46, 48, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "#e58f92";
-  ctx.fillRect(cx - 27, cy - 4, 13, 8);
-  ctx.fillRect(cx + 14, cy - 4, 13, 8);
-  ctx.fillStyle = "#d9848a";
-  ctx.fillRect(cx - 5, cy - 10, 10, 17);
-  ctx.fillRect(cx - 9, cy + 9, 18, 4);
-  ctx.fillStyle = "#7b4d46";
-  ctx.fillRect(cx - 12, cy + 19, 24, 5);
-  ctx.fillStyle = "#eaa0a5";
-  ctx.fillRect(cx - 8, cy + 22, 16, 3);
-  ctx.fillStyle = "#3b2a23";
-  ctx.fillRect(cx - 22, cy - 16, 16, 5);
-  ctx.fillRect(cx + 6, cy - 16, 16, 5);
+  ctx.fillStyle = "#80868a";
+  [
+    [-42, -34, 18], [-34, -50, 15], [-20, -58, 16], [-4, -60, 15],
+    [14, -58, 17], [31, -48, 15], [42, -28, 18], [-48, -10, 17],
+    [48, -8, 17], [-40, 14, 16], [40, 16, 16],
+  ].forEach(([dx, dy, r]) => {
+    ctx.beginPath();
+    ctx.arc(cx + dx, cy + dy, r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.fillStyle = "#c9cccb";
+  [
+    [-45, -28, 9], [-32, -48, 8], [-12, -56, 8], [22, -52, 9],
+    [39, -32, 8], [-44, 8, 8], [44, 10, 8],
+  ].forEach(([dx, dy, r]) => {
+    ctx.beginPath();
+    ctx.arc(cx + dx, cy + dy, r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.fillStyle = "#3b2d29";
+  ctx.fillRect(cx - 27, cy - 49, 21, 10);
+  ctx.fillRect(cx + 7, cy - 48, 21, 10);
+
+  ctx.fillStyle = "#f1b4a2";
+  ctx.beginPath();
+  ctx.roundRect(cx - 31, cy - 32, 62, 58, 18);
+  ctx.fill();
+  ctx.fillStyle = "#f6c4b3";
+  ctx.fillRect(cx - 20, cy - 26, 40, 12);
+  ctx.fillStyle = "#e98f93";
+  ctx.fillRect(cx - 28, cy - 4, 13, 8);
+  ctx.fillRect(cx + 15, cy - 4, 13, 8);
+  ctx.fillStyle = "#d67e86";
+  ctx.fillRect(cx - 5, cy - 10, 10, 18);
+  ctx.fillRect(cx - 8, cy + 9, 16, 3);
+  ctx.fillStyle = "#744943";
+  ctx.fillRect(cx - 12, cy + 17, 24, 4);
+  ctx.fillStyle = "#f2a3ad";
+  ctx.fillRect(cx - 7, cy + 20, 14, 3);
+  ctx.fillStyle = "#30231f";
+  ctx.fillRect(cx - 23, cy - 17, 17, 5);
+  ctx.fillRect(cx + 6, cy - 17, 18, 5);
+  ctx.fillRect(cx - 22, cy - 21, 18, 3);
+  ctx.fillRect(cx + 5, cy - 22, 20, 3);
   ctx.fillStyle = "#f8efd0";
   ctx.fillRect(cx - 18, cy - 8, 8, 7);
   ctx.fillRect(cx + 10, cy - 8, 8, 7);
-  ctx.fillStyle = "#5d523a";
-  ctx.fillRect(cx - 15, cy - 7, 4, 5);
-  ctx.fillRect(cx + 13, cy - 7, 4, 5);
+  ctx.fillStyle = "#6b5c3f";
+  ctx.fillRect(cx - 15, cy - 7, 4, 4);
+  ctx.fillRect(cx + 13, cy - 7, 4, 4);
   ctx.fillStyle = "rgba(80,45,42,0.32)";
-  ctx.fillRect(cx - 16, cy - 28, 32, 3);
-  ctx.fillRect(cx - 18, cy - 23, 36, 2);
+  ctx.fillRect(cx - 17, cy - 27, 34, 2);
+  ctx.fillRect(cx - 18, cy - 22, 36, 2);
 
-  ctx.fillStyle = "#ff5fb7";
+  ctx.fillStyle = "#2f6f8f";
   ctx.beginPath();
-  ctx.roundRect(cx - 36, cy + 26, 72, 42, 14);
+  ctx.roundRect(cx - 38, cy + 27, 76, 44, 14);
   ctx.fill();
+  ctx.fillStyle = "#ffd8ef";
+  ctx.fillRect(cx - 18, cy + 30, 36, 12);
+  ctx.fillStyle = "#ff5fb7";
+  ctx.fillRect(cx - 10, cy + 42, 20, 20);
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 10px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText(label, cx, cy + 52);
+  ctx.fillText(label, cx, cy + 62);
 }
 
 function drawMomJohanneFilter() {
