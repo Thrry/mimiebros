@@ -1487,13 +1487,16 @@ function startSkincareGame(stop, mode = "road") {
   input.jumpPressed = false;
 }
 
-function startProductHuntLevel() {
+function startProductHuntLevel(preserveCollection = false) {
   state = "productHunt";
   productHuntX = W / 2;
   productHuntItems = [];
-  productHuntCollected = [];
+  if (!preserveCollection) productHuntCollected = [];
   productHuntSpawnTimer = 0;
-  productHuntFeedback = "Attrape tous les produits avant de passer au miroir.";
+  const missing = missingSkincareProducts().length;
+  productHuntFeedback = missing > 0
+    ? `Trousse incomplete: attrape les ${missing} produits manquants.`
+    : "Attrape tous les produits avant de passer au miroir.";
   productHuntFeedbackTimer = 180;
   input.left = false;
   input.right = false;
@@ -1660,10 +1663,7 @@ function finishSkincareGame() {
 
 function startSkincareLevel() {
   if (!skincareCollectionComplete()) {
-    const missing = missingSkincareProducts().length;
-    mapSelected = 3;
-    startPlatformLevel("platform2");
-    addFloat(`trousse incomplete: ${missing} a choper`, player.x + 120, player.y - 28, "#ffd8ef");
+    startProductHuntLevel(true);
     return;
   }
   startSkincareGame(null, "level2");
