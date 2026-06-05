@@ -184,6 +184,7 @@ const input = {
   leftPressed: false,
   right: false,
   rightPressed: false,
+  upPressed: false,
   down: false,
   downPressed: false,
   jump: false,
@@ -1661,8 +1662,16 @@ function startCapitalQuizLevel() {
 }
 
 function updateCapitalQuizLevel() {
-  if (input.leftPressed) capitalQuizSelected = Math.max(0, capitalQuizSelected - 1);
-  if (input.rightPressed) capitalQuizSelected = Math.min(3, capitalQuizSelected + 1);
+  const question = capitalQuizQuestions[capitalQuizIndex] || capitalQuizQuestions[0];
+  const optionCount = question?.options.length || 4;
+  const moveCapitalQuizSelection = (delta) => {
+    capitalQuizSelected = (capitalQuizSelected + optionCount + delta) % optionCount;
+  };
+
+  if (input.leftPressed) moveCapitalQuizSelection(-1);
+  if (input.rightPressed) moveCapitalQuizSelection(1);
+  if (input.upPressed && capitalQuizSelected >= 2) moveCapitalQuizSelection(-2);
+  if (input.downPressed && capitalQuizSelected + 2 < optionCount) moveCapitalQuizSelection(2);
 
   if (input.jumpPressed) {
     if (capitalQuizDone) {
@@ -1681,13 +1690,14 @@ function updateCapitalQuizLevel() {
       }
       input.leftPressed = false;
       input.rightPressed = false;
+      input.upPressed = false;
+      input.downPressed = false;
       input.jumpPressed = false;
       updateHud();
       syncMusicToState();
       return;
     }
 
-    const question = capitalQuizQuestions[capitalQuizIndex];
     const answer = question.options[capitalQuizSelected];
     if (answer === question.capital) {
       capitalQuizScore += 1;
@@ -1710,6 +1720,8 @@ function updateCapitalQuizLevel() {
   if (capitalQuizFeedbackTimer > 0) capitalQuizFeedbackTimer -= 1;
   input.leftPressed = false;
   input.rightPressed = false;
+  input.upPressed = false;
+  input.downPressed = false;
   input.jumpPressed = false;
   updateHud();
 }
@@ -6676,7 +6688,7 @@ function drawCapitalQuizLevel() {
     ctx.fillText(`Capitale de ${question.country} ?`, 770, 312);
     ctx.fillStyle = "#b9c2bd";
     ctx.font = "800 15px system-ui";
-    ctx.fillText("< > / Q D: choisir   Espace / Entree: valider   1-4: reponse directe", 770, 372);
+    ctx.fillText("Fleches / Q D: choisir les 4 cases   Espace / Entree: valider   1-4: reponse directe", 770, 372);
 
     question.options.forEach((option, index) => {
       const x = 360 + (index % 2) * 430;
@@ -7178,6 +7190,11 @@ function setKey(key, value) {
 window.addEventListener("keydown", (event) => {
   startMusic();
   handleGodCodeKey(event.key);
+  if (state === "capitalQuiz" && ["ArrowUp", "w", "z"].includes(event.key)) {
+    event.preventDefault();
+    input.upPressed = true;
+    return;
+  }
   if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " ", "a", "q", "d", "w", "z", "s"].includes(event.key)) {
     event.preventDefault();
     setKey(event.key, true);
