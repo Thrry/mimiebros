@@ -209,6 +209,18 @@ const skincareProducts = [
   { id: "straightener", name: "Lisseur", short: "LIS", color: "#86f7ff" },
 ];
 
+const skincareShelfProductIds = [
+  "mascara",
+  "cleanser",
+  "gloss",
+  "serum",
+  "straightener",
+  "blush",
+  "cream",
+  "tint",
+  "spf",
+];
+
 const skincareHints = {
   cleanser: "D'abord on nettoie: meme le miroir dit 'commence propre'.",
   serum: "Le serum veut passer avant la creme, sinon il boude.",
@@ -1246,6 +1258,10 @@ function skincareProductForId(id) {
   return skincareProducts.find((product) => product.id === id) || skincareProducts[0];
 }
 
+function skincareShelfProducts() {
+  return skincareShelfProductIds.map((id) => skincareProductForId(id));
+}
+
 function syncSkincarePickupsFromCollection() {
   for (const pickup of level.skincarePickups) {
     pickup.taken = productHuntCollected.includes(pickup.id);
@@ -1581,6 +1597,7 @@ function spawnProductHuntItem() {
 }
 
 function updateSkincareGame() {
+  const shelfProducts = skincareShelfProducts();
   const aimSpeed = skincareMode === "level2" ? 0.015 : 0.011;
   skincareAim += skincareAimDir * aimSpeed;
   if (skincareAim >= 1) {
@@ -1593,10 +1610,10 @@ function updateSkincareGame() {
   }
 
   if (input.leftPressed) {
-    skincareSelected = (skincareSelected + skincareProducts.length - 1) % skincareProducts.length;
+    skincareSelected = (skincareSelected + shelfProducts.length - 1) % shelfProducts.length;
   }
   if (input.rightPressed) {
-    skincareSelected = (skincareSelected + 1) % skincareProducts.length;
+    skincareSelected = (skincareSelected + 1) % shelfProducts.length;
   }
   if (input.jumpPressed) {
     applySkincareProduct();
@@ -1610,7 +1627,7 @@ function updateSkincareGame() {
 }
 
 function applySkincareProduct() {
-  const product = skincareProducts[skincareSelected];
+  const product = skincareShelfProducts()[skincareSelected] || skincareProducts[0];
   const expected = skincareProducts[skincareStep];
   const target = skincareTargets[expected.id];
   const aimX = skincareAimX();
@@ -6514,11 +6531,13 @@ function drawSkincareShelf() {
   ctx.fillRect(134, 514, 1012, 30);
   const startX = 118;
   const gap = 126;
+  const shelfProducts = skincareShelfProducts();
 
-  skincareProducts.forEach((product, index) => {
+  shelfProducts.forEach((product, index) => {
     const x = startX + index * gap;
     const selected = index === skincareSelected;
-    const applied = index < skincareStep;
+    const routineIndex = skincareProducts.findIndex((item) => item.id === product.id);
+    const applied = routineIndex >= 0 && routineIndex < skincareStep;
 
     ctx.fillStyle = selected ? "#ffcf4e" : "rgba(14, 20, 24, 0.74)";
     ctx.fillRect(x - 15, 422, 106, 98);
