@@ -4135,25 +4135,25 @@ function drawFighterPrizeKeys() {
 }
 
 function drawFighterFamilyPortrait() {
-  const x = 130;
-  const y = 260;
+  const x = 82;
+  const y = 246;
   ctx.save();
-  ctx.fillStyle = "rgba(12, 8, 8, 0.88)";
-  ctx.fillRect(x, y, 144, 104);
+  ctx.fillStyle = "rgba(12, 8, 8, 0.94)";
+  ctx.fillRect(x, y, 178, 124);
   ctx.strokeStyle = "#8b5a31";
-  ctx.lineWidth = 7;
-  ctx.strokeRect(x + 3, y + 3, 138, 98);
+  ctx.lineWidth = 8;
+  ctx.strokeRect(x + 3, y + 3, 172, 118);
   ctx.strokeStyle = "#ffcf4e";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(x + 14, y + 14, 116, 76);
+  ctx.lineWidth = 3;
+  ctx.strokeRect(x + 14, y + 14, 150, 94);
 
-  drawFamilyPortraitHead(x + 44, y + 55, "#d9b177", "#6d543c", "P");
-  drawFamilyPortraitHead(x + 72, y + 42, "#f1b4a2", "#b9c2bd", "S");
-  drawFamilyPortraitHead(x + 101, y + 58, "#ffcf9d", "#9a6b43", "J");
+  drawFamilyPortraitHead(x + 52, y + 69, "#d9b177", "#6d543c", "P");
+  drawFamilyPortraitHead(x + 89, y + 52, "#f1b4a2", "#b9c2bd", "S");
+  drawFamilyPortraitHead(x + 126, y + 72, "#ffcf9d", "#9a6b43", "J");
   ctx.fillStyle = "#f8efd0";
-  ctx.font = "900 9px system-ui";
+  ctx.font = "900 12px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText("NOUS 3", x + 72, y + 88);
+  ctx.fillText("NOUS 3", x + 89, y + 106);
   ctx.restore();
   ctx.textAlign = "left";
 }
