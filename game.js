@@ -778,6 +778,7 @@ let fighterRoundOverTimer = 0;
 let fighterCombo = 0;
 let fighterDadJokeIndex = 0;
 let fighterVanneIndex = 0;
+let fighterTopLeTimer = 0;
 let mangoSpeedTimer = 0;
 let mangoInvincibleTimer = 0;
 let godCodeBuffer = "";
@@ -880,6 +881,7 @@ function resetGame() {
   fighterCombo = 0;
   fighterDadJokeIndex = 0;
   fighterVanneIndex = 0;
+  fighterTopLeTimer = 0;
   mangoSpeedTimer = 0;
   mangoInvincibleTimer = 0;
   capitalQuizQuestions = [];
@@ -2047,6 +2049,7 @@ function startFighterLevel() {
   fighterCombo = 0;
   fighterDadJokeIndex = 0;
   fighterVanneIndex = 0;
+  fighterTopLeTimer = 2600;
   updateHud();
   syncMusicToState();
 }
@@ -2102,6 +2105,7 @@ function updateFighterLevel(dt) {
   input.jumpPressed = false;
   input.vannePressed = false;
 
+  updateFighterTopLe(dt);
   updateDadFighterAi(dt);
   updateFighterBody(fighterJohanne, dt);
   updateFighterBody(fighterDad, dt);
@@ -2146,6 +2150,14 @@ function resolveFighterSpacing() {
   const dir = distance >= 0 ? 1 : -1;
   fighterJohanne.x -= push * dir;
   fighterDad.x += push * dir;
+}
+
+function updateFighterTopLe(dt) {
+  if (!fighterJohanne || fighterRoundOverTimer > 0) return;
+  fighterTopLeTimer -= dt;
+  if (fighterTopLeTimer > 0) return;
+  addFighterEffect("toplé toplé toplé", fighterJohanne.x + fighterJohanne.w / 2, fighterJohanne.y - 36, "#ffd8ef", 82);
+  fighterTopLeTimer = 6000 + Math.random() * 4200;
 }
 
 function johanneTickleAttack() {
@@ -2271,8 +2283,8 @@ function damageFighter(fighter, amount, knockback) {
   shake = Math.max(shake, 8);
 }
 
-function addFighterEffect(text, x, y, color) {
-  fighterEffects.push({ text, x, y, color, life: 42, vy: -0.7 });
+function addFighterEffect(text, x, y, color, life = 42, vy = -0.7) {
+  fighterEffects.push({ text, x, y, color, life, vy });
 }
 
 function updateFighterEffects() {
