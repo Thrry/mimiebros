@@ -314,23 +314,44 @@ canvas {
 
 .pixel-johanne {
   position: absolute;
-  left: 48%;
-  bottom: 96px;
-  width: 42px;
-  height: 68px;
-  background: #2f5f9f;
+  right: clamp(26px, 7vw, 118px);
+  bottom: 52px;
+  width: clamp(260px, 31vw, 430px);
+  aspect-ratio: 2 / 3;
+  background: url("./assets/johanne-hero-pixel.png") center bottom / contain no-repeat;
+  filter:
+    drop-shadow(0 18px 0 rgba(4, 8, 12, 0.28))
+    drop-shadow(0 24px 28px rgba(4, 8, 12, 0.48));
+  animation: hero-ready 1.05s steps(2, end) infinite;
+}
+
+.pixel-johanne::before,
+.pixel-johanne::after {
+  position: absolute;
+  display: block;
+  width: 18px;
+  height: 18px;
+  background: #ffcf4e;
   box-shadow:
-    -8px -32px 0 #7a5132,
-    0 -40px 0 #a9794f,
-    8px -32px 0 #7a5132,
-    0 -26px 0 #ffcf9d,
-    -12px 8px 0 #ffcf9d,
-    42px 8px 0 #ffcf9d,
-    0 68px 0 #223047,
-    22px 68px 0 #223047,
-    0 84px 0 #101820,
-    22px 84px 0 #101820;
-  animation: title-hop 1.05s steps(2) infinite;
+    46px -28px 0 #ffd8ef,
+    84px 26px 0 #86f7ff,
+    -30px 74px 0 #ffcf4e,
+    112px 112px 0 #f8efd0;
+  content: "";
+  image-rendering: pixelated;
+}
+
+.pixel-johanne::before {
+  top: 13%;
+  right: 6%;
+  animation: hero-spark 0.9s steps(2, end) infinite;
+}
+
+.pixel-johanne::after {
+  top: 38%;
+  left: 1%;
+  transform: scale(0.7);
+  animation: hero-spark 1.2s steps(2, end) infinite reverse;
 }
 
 .pixel-ground {
@@ -350,6 +371,19 @@ canvas {
   }
 }
 
+@keyframes hero-ready {
+  50% {
+    transform: translateY(-12px) rotate(-1deg);
+  }
+}
+
+@keyframes hero-spark {
+  50% {
+    transform: translateY(-8px) scale(1.18);
+    opacity: 0.58;
+  }
+}
+
 .panel {
   position: relative;
   width: min(620px, 100%);
@@ -366,8 +400,10 @@ canvas {
 }
 
 .title-panel {
-  width: min(720px, 92%);
+  width: min(660px, 54%);
+  justify-self: start;
   margin-top: clamp(56px, 8vw, 86px);
+  margin-left: clamp(22px, 5vw, 74px);
   border-color: #101820;
   background:
     linear-gradient(180deg, rgba(10, 22, 33, 0.92), rgba(4, 8, 12, 0.96)),
@@ -377,7 +413,7 @@ canvas {
     0 0 0 14px #101820,
     0 30px 0 rgba(4, 8, 12, 0.34),
     0 40px 70px rgba(0, 0, 0, 0.46);
-  text-align: center;
+  text-align: left;
 }
 
 .title-badge {
@@ -461,7 +497,7 @@ p {
 .actions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 12px;
   margin-top: 24px;
 }
@@ -596,6 +632,24 @@ p {
 @media (max-width: 680px) {
   .stage {
     width: 100vw;
+  }
+
+  .pixel-johanne {
+    right: -18px;
+    bottom: 78px;
+    width: min(58vw, 260px);
+    opacity: 0.78;
+  }
+
+  .title-panel {
+    width: min(92%, 540px);
+    justify-self: center;
+    margin-left: 0;
+    text-align: center;
+  }
+
+  .actions {
+    justify-content: center;
   }
 
   .hud {
