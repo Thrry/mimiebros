@@ -539,7 +539,7 @@ p {
 }
 
 .showcase-card {
-  width: min(430px, 92%);
+  width: min(920px, 94%);
   border: 5px solid #f8efd0;
   border-radius: 8px;
   background: rgba(5, 6, 9, 0.9);
@@ -565,19 +565,70 @@ p {
   line-height: 1;
 }
 
-.showcase-card iframe {
+.showcase-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 410px) minmax(240px, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.showcase-player,
+.showcase-poster {
+  height: min(64vh, 560px);
+  border: 2px solid rgba(248, 239, 208, 0.7);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #101820;
+}
+
+.showcase-player iframe {
   display: block;
   width: 100%;
-  height: min(64vh, 560px);
+  height: 100%;
   border: 0;
-  border-radius: 6px;
   background: #101820;
+}
+
+.showcase-poster {
+  position: relative;
+}
+
+.showcase-poster img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.showcase-poster p {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  margin: 0;
+  padding: 10px;
+  border: 2px solid rgba(255, 207, 78, 0.78);
+  border-radius: 6px;
+  background: rgba(5, 6, 9, 0.82);
+  color: #f8efd0;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.35;
 }
 
 .showcase-card a {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-top: 10px;
-  color: #ffd8ef;
+  padding: 10px 14px;
+  border: 2px solid #ffcf4e;
+  border-radius: 6px;
+  background: #ffcf4e;
+  color: #101820;
+  box-shadow: 0 4px 0 #a65e00;
+  font-size: 15px;
+  line-height: 1;
   font-weight: 900;
   text-decoration: none;
 }
@@ -587,6 +638,17 @@ p {
   color: #f8efd0;
   font-size: 14px;
   font-weight: 900;
+}
+
+@media (max-width: 760px) {
+  .showcase-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .showcase-player,
+  .showcase-poster {
+    height: 280px;
+  }
 }
 
 .touch-controls {
