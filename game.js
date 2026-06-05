@@ -6005,11 +6005,22 @@ function drawSchoolPaperEnemy(e, label, paperColor, accent) {
   ctx.fillStyle = "#7a3333";
   ctx.fillRect(-8, 10, 16, 3);
 
-  ctx.fillStyle = "#101820";
-  ctx.font = "900 11px system-ui";
-  ctx.textAlign = "center";
-  ctx.fillText(label, 0, -e.h / 2 + 31);
   ctx.restore();
+
+  const labelX = e.x + e.w / 2;
+  const labelY = e.y + e.h / 2 + bob + 4;
+  const labelW = label === "COLLE" ? 66 : 50;
+  ctx.fillStyle = "rgba(5, 6, 9, 0.9)";
+  ctx.beginPath();
+  ctx.roundRect(labelX - labelW / 2, labelY - 13, labelW, 24, 6);
+  ctx.fill();
+  ctx.strokeStyle = "#f8efd0";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(labelX - labelW / 2 + 2, labelY - 11, labelW - 4, 20);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "900 15px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(label, labelX, labelY + 5);
   ctx.textAlign = "left";
 }
 
