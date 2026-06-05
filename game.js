@@ -1072,9 +1072,15 @@ function completeLevelAndReturnToMap(nextLevel, completedNodeIndex) {
   startLevelVictory(nextLevel, completedNodeIndex);
 }
 
+function mapNodeIndexForLevel(level, fallbackIndex = 0) {
+  const index = mapNodes.findIndex((node) => node.level === level);
+  if (index >= 0) return index;
+  return Math.max(0, Math.min(mapNodes.length - 1, fallbackIndex));
+}
+
 function returnToMap(nextLevel, completedNodeIndex) {
   unlockedLevel = Math.max(unlockedLevel, nextLevel);
-  mapSelected = Math.min(completedNodeIndex + 1, mapNodes.length - 1);
+  mapSelected = mapNodeIndexForLevel(nextLevel, completedNodeIndex + 1);
   state = "map";
   careTimer = 0;
   careMode = "";
@@ -1548,7 +1554,7 @@ function startParentalLevel() {
   parentalVideos = 0;
   parentalCodes = 0;
   parentalStealth = 0;
-  parentalFeedback = "Niveau 6: trouve les indices dans Actu, puis tape le code 10 fois.";
+  parentalFeedback = "Niveau 7: trouve les indices dans Actu, puis tape le code 10 fois.";
   parentalFeedbackTimer = 180;
   parentalAlertTimer = 0;
   zoneEl.textContent = "Controle parental";
@@ -1769,7 +1775,7 @@ function startSassLevel() {
   sassRound = 0;
   sassSelected = 0;
   sassScore = 0;
-  sassFeedback = "Niveau 4: Papa lance ses blagues, reponds le plus mal possible.";
+  sassFeedback = "Niveau 3: Papa lance ses blagues, reponds le plus mal possible.";
   sassFeedbackTimer = 260;
   sassAdvanceTimer = 0;
   updateHud();
