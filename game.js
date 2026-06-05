@@ -24,6 +24,7 @@ const MAX_SPEED = 10.4;
 const JUMP = -19.2;
 const PLAYER_SMALL = { w: 34, h: 54 };
 const PLAYER_BIG = { w: 46, h: 72 };
+const MANGO_POWER_FRAMES = 600;
 const SHOWCASE_TIKTOK_EMBED = "https://www.tiktok.com/embed/v2/7549905634041466114";
 
 const mapArt = new Image();
@@ -726,6 +727,7 @@ let fighterCombo = 0;
 let fighterDadJokeIndex = 0;
 let fighterVanneIndex = 0;
 let mangoSpeedTimer = 0;
+let mangoInvincibleTimer = 0;
 let godCodeBuffer = "";
 let capitalQuizQuestions = [];
 let capitalQuizIndex = 0;
@@ -825,6 +827,7 @@ function resetGame() {
   fighterDadJokeIndex = 0;
   fighterVanneIndex = 0;
   mangoSpeedTimer = 0;
+  mangoInvincibleTimer = 0;
   capitalQuizQuestions = [];
   capitalQuizIndex = 0;
   capitalQuizSelected = 0;
@@ -895,6 +898,7 @@ function startPlatformLevel(runId = "platform1") {
     big: false,
   });
   mangoSpeedTimer = 0;
+  mangoInvincibleTimer = 0;
   level.powerups = [];
   level.enemies.forEach((enemy) => {
     enemy.x = enemy.spawnX;
@@ -999,7 +1003,7 @@ function rectsOverlap(a, b) {
 }
 
 function hitPlayer(power = 1, reason = "") {
-  if (player.invuln > 0 || state !== "playing") return;
+  if (player.invuln > 0 || mangoInvincibleTimer > 0 || state !== "playing") return;
   if (player.big) {
     player.big = false;
     player.y += PLAYER_BIG.h - PLAYER_SMALL.h;
@@ -1312,6 +1316,7 @@ function continueFromCheckpoint() {
     big: false,
   });
   mangoSpeedTimer = 0;
+  mangoInvincibleTimer = 0;
   level.powerups = [];
   careTimer = 0;
   careMode = "";
@@ -2392,6 +2397,7 @@ function update(dt) {
   }
 
   if (mangoSpeedTimer > 0) mangoSpeedTimer -= 1;
+  if (mangoInvincibleTimer > 0) mangoInvincibleTimer -= 1;
   const speedBoost = mangoSpeedTimer > 0 ? 1.55 : 1;
   const accel = 1.12 * speedBoost;
   if (input.left) {
@@ -2441,7 +2447,11 @@ function update(dt) {
     }
   }
 
-  if (player.y > H + 180) hitPlayer(3);
+  if (player.y > H + 180) {
+    continueFromCheckpoint();
+    updateHud();
+    return;
+  }
   player.x = Math.max(activePlatformRun.startX - 24, Math.min(WORLD_W - player.w - 28, player.x));
   updateCheckpoint();
 
@@ -2713,10 +2723,11 @@ function updatePowerups() {
 function collectPowerup(powerup) {
   powerup.taken = true;
   if (powerup.type === "mango") {
-    mangoSpeedTimer = 620;
+    mangoSpeedTimer = MANGO_POWER_FRAMES;
+    mangoInvincibleTimer = MANGO_POWER_FRAMES;
     score += 4;
     player.vx += player.facing * 8;
-    addFloat("mangue: SUPER SPEED", powerup.x, powerup.y, "#ffcf4e");
+    addFloat("mangue: invincible + speed 10s", powerup.x, powerup.y, "#ffcf4e");
   } else {
     if (!player.big) {
       player.y -= PLAYER_BIG.h - player.h;
@@ -5761,6 +5772,14 @@ function drawPlayer() {
     for (let i = 0; i < 3; i += 1) {
       ctx.fillRect(-44 - i * 14, 10 + i * 9, 28, 5);
     }
+  }
+
+  if (mangoInvincibleTimer > 0) {
+    ctx.strokeStyle = "rgba(255, 207, 78, 0.82)";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(-25, -18, 50, 66);
+    ctx.fillStyle = "rgba(255, 207, 78, 0.18)";
+    ctx.fillRect(-29, -22, 58, 74);
   }
 
   ctx.fillStyle = "#7a5132";
