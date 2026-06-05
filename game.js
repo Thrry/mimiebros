@@ -4135,8 +4135,8 @@ function drawFighterPrizeKeys() {
 }
 
 function drawFighterFamilyPortrait() {
-  const x = 1082;
-  const y = 54;
+  const x = 130;
+  const y = 260;
   ctx.save();
   ctx.fillStyle = "rgba(12, 8, 8, 0.88)";
   ctx.fillRect(x, y, 144, 104);
