@@ -1187,11 +1187,21 @@ function setShowcaseVideoVisible(visible) {
     musicGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.02);
   }
   if (visible && showcaseLocalVideo) {
-    showcaseLocalVideo.load();
+    showcaseLocalVideo.currentTime = 0;
+    showcaseLocalVideo.muted = false;
+    showcaseLocalVideo.play().catch(() => {
+      showcaseLocalVideo.muted = true;
+      showcaseLocalVideo.play().then(() => {
+        messageEl.textContent = "Showcase lance automatiquement. Son a activer dans la video.";
+      }).catch(() => {
+        messageEl.textContent = "Le navigateur bloque l'autoplay: clique sur la video pour lancer le showcase.";
+      });
+    });
   }
   if (!visible && showcaseLocalVideo) {
     showcaseLocalVideo.pause();
     showcaseLocalVideo.currentTime = 0;
+    showcaseLocalVideo.muted = false;
     setMusicVolume();
   }
 }
