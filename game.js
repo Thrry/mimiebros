@@ -274,6 +274,21 @@ const momGuestTypeDetails = {
   },
 };
 
+const phoneTeenCrowd = [
+  { x: 72, y: 186, scale: 0.82, shirt: "#ff5fb7", hair: "#7a5132", skin: "#ffcf9d", phone: "#86f7ff", phase: 0.1, label: "67" },
+  { x: 178, y: 512, scale: 0.72, shirt: "#2f6f8f", hair: "#4d3428", skin: "#d9a16f", phone: "#ffd8ef", phase: 1.7, label: "msg" },
+  { x: 316, y: 162, scale: 0.66, shirt: "#ffcf4e", hair: "#9a6b43", skin: "#ffcf9d", phone: "#c8ff4e", phase: 3.2, label: "live" },
+  { x: 430, y: 618, scale: 0.76, shirt: "#c8ff4e", hair: "#5a3925", skin: "#f1b37c", phone: "#86f7ff", phase: 2.4, label: "lol" },
+  { x: 612, y: 174, scale: 0.7, shirt: "#a84dff", hair: "#7a5132", skin: "#ffcf9d", phone: "#ffcf4e", phase: 4.1, label: "snap" },
+  { x: 744, y: 582, scale: 0.78, shirt: "#86f7ff", hair: "#3d2b22", skin: "#d9a16f", phone: "#ffd8ef", phase: 0.8, label: "aya" },
+  { x: 904, y: 168, scale: 0.64, shirt: "#ff8f5f", hair: "#8b623f", skin: "#ffcf9d", phone: "#c8ff4e", phase: 5.1, label: "??" },
+  { x: 1048, y: 528, scale: 0.82, shirt: "#ffd8ef", hair: "#5a3925", skin: "#f1b37c", phone: "#86f7ff", phase: 2.9, label: "bff" },
+  { x: 1188, y: 238, scale: 0.7, shirt: "#4b86ff", hair: "#7a5132", skin: "#ffcf9d", phone: "#ffcf4e", phase: 4.7, label: "tel" },
+  { x: 118, y: 646, scale: 0.62, shirt: "#f8efd0", hair: "#4d3428", skin: "#d9a16f", phone: "#ff5fb7", phase: 5.9, label: "vid" },
+  { x: 1118, y: 656, scale: 0.66, shirt: "#c8ff4e", hair: "#9a6b43", skin: "#ffcf9d", phone: "#86f7ff", phase: 1.1, label: "omg" },
+  { x: 560, y: 652, scale: 0.58, shirt: "#ff5f67", hair: "#5a3925", skin: "#f1b37c", phone: "#ffd8ef", phase: 3.7, label: "7" },
+];
+
 const europeCapitals = [
   ["Albanie", "Tirana"],
   ["Allemagne", "Berlin"],
@@ -3130,6 +3145,7 @@ function draw() {
   drawFloatingTexts();
 
   ctx.restore();
+  if (state !== "playing") drawPhoneTeenCrowd("menu");
   drawVignette();
   if (state === "playing") drawPlatformQuest();
   if (state === "playing") drawSkincareCollectionHud();
@@ -3303,6 +3319,71 @@ function drawCoverImage(image) {
   ctx.drawImage(image, x, y, width, height);
 }
 
+function drawPhoneTeenCrowd(layer = "menu") {
+  const time = performance.now() * 0.004;
+  const alpha = layer === "map" ? 0.78 : 0.9;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  for (const teen of phoneTeenCrowd) {
+    const edgeOffset = layer === "menu"
+      ? Math.sin(time * 0.28 + teen.phase) * 10
+      : Math.sin(time * 0.18 + teen.phase) * 5;
+    const x = teen.x + edgeOffset;
+    const y = teen.y + (layer === "map" ? 0 : Math.sin(time * 0.22 + teen.phase) * 6);
+    const hiddenByHero = layer === "menu" && x > 255 && x < 1025 && y > 205 && y < 555;
+    if (hiddenByHero) continue;
+    drawPhoneTeenSprite(x, y, teen, time);
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawPhoneTeenSprite(x, y, teen, time) {
+  const s = teen.scale;
+  const bob = Math.round(Math.sin(time * 2.6 + teen.phase) * 3);
+  const arm = Math.round(Math.sin(time * 3.4 + teen.phase) * 3);
+  const px = (color, dx, dy, w, h) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(Math.round(x + dx * s), Math.round(y + (dy + bob) * s), Math.round(w * s), Math.round(h * s));
+  };
+
+  ctx.fillStyle = "rgba(5, 6, 9, 0.2)";
+  ctx.beginPath();
+  ctx.ellipse(x + 15 * s, y + 62 * s, 19 * s, 5 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  px(teen.hair, 4, 0, 22, 10);
+  px(teen.skin, 7, 7, 16, 17);
+  px("#101820", 11, 14, 2, 2);
+  px("#101820", 18, 14, 2, 2);
+  px("#8f4d4d", 13, 21, 7, 2);
+  px(teen.shirt, 3, 27, 24, 25);
+  px("#101820", 7, 52, 7, 17);
+  px("#101820", 17, 52, 7, 17);
+  px("#f8efd0", 5, 69, 9, 3);
+  px("#f8efd0", 16, 69, 9, 3);
+  px(teen.skin, -2, 30 + arm, 7, 16);
+  px(teen.skin, 26, 29 - arm, 7, 18);
+  px("#101820", 22, 26 - arm, 13, 19);
+  px(teen.phone, 25, 30 - arm, 7, 9);
+  px("rgba(255,255,255,0.72)", 27, 31 - arm, 2, 2);
+
+  if (Math.sin(time + teen.phase) > -0.35) {
+    const bubbleX = x + 30 * s;
+    const bubbleY = y - 17 * s + bob;
+    ctx.fillStyle = "rgba(5, 6, 9, 0.8)";
+    ctx.beginPath();
+    ctx.roundRect(bubbleX, bubbleY, 38 * s, 18 * s, 5 * s);
+    ctx.fill();
+    ctx.fillStyle = "#f8efd0";
+    ctx.font = `900 ${Math.max(7, Math.round(9 * s))}px system-ui`;
+    ctx.textAlign = "center";
+    ctx.fillText(teen.label, bubbleX + 19 * s, bubbleY + 12 * s);
+    ctx.textAlign = "left";
+  }
+}
+
 function drawWorldMap() {
   ctx.clearRect(0, 0, W, H);
 
@@ -3311,6 +3392,7 @@ function drawWorldMap() {
     drawGeneratedMapOverlay();
     drawIsometricMapRoute();
     drawGeneratedMapSiteLabels();
+    drawPhoneTeenCrowd("map");
 
     drawAyaTourBusOnMap();
     mapNodes.forEach((node, index) => drawMapNode(node, index));
@@ -3330,6 +3412,7 @@ function drawWorldMap() {
   drawIsometricCityGrid();
   drawIsometricMapRoute();
   drawMapDistrictLandmarks();
+  drawPhoneTeenCrowd("map");
 
   drawMapLandmarkForNode(mapNodes[0], "college");
   drawMapLandmarkForNode(mapNodes[1], "bubble");
