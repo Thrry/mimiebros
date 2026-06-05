@@ -2205,13 +2205,13 @@ function updateDadFighterAi(dt) {
   if (fighterAiTimer <= 0 && fighterDad.cooldown <= 0) {
     if (distance < 150) dadAccentAttack();
     else dadPunProjectile();
-    fighterAiTimer = 620 + Math.random() * 460;
+    fighterAiTimer = 1400 + Math.random() * 900;
   }
 }
 
 function dadPunProjectile() {
   fighterDad.attackTimer = 220;
-  fighterDad.cooldown = 580;
+  fighterDad.cooldown = 1250;
   const line = fighterDadJokes[fighterDadJokeIndex % fighterDadJokes.length];
   fighterDadJokeIndex += 1;
   fighterProjectiles.push({
@@ -2222,7 +2222,7 @@ function dadPunProjectile() {
     h: 54,
     vx: fighterDad.facing * 5,
     text: line,
-    life: 160,
+    life: 120,
   });
   fighterFeedback = "Papa resiste avec une blague de daron.";
   fighterFeedbackTimer = 80;
