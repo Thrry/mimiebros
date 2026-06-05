@@ -333,13 +333,13 @@ const SASS_TARGET_SCORE = 7;
 
 const mapNodes = [
   { id: "platform1", kind: "platform", title: "Mario 1", subtitle: "College", x: 170, y: 286, level: 1 },
-  { id: "platform2", kind: "platform", title: "Mario 2", subtitle: "Famille", x: 322, y: 354, level: 2 },
-  { id: "sass", kind: "minigame", title: "Reponses", subtitle: "Parents", x: 478, y: 408, level: 3 },
-  { id: "skincare", kind: "minigame", title: "Make-up", subtitle: "Avant Moulin", x: 638, y: 450, level: 4 },
-  { id: "platform3", kind: "platform", title: "Mario 3", subtitle: "Moulin", x: 790, y: 392, level: 5 },
-  { id: "momParty", kind: "minigame", title: "Maman", subtitle: "S'incruste", x: 910, y: 324, level: 6 },
-  { id: "parental", kind: "minigame", title: "Controle", subtitle: "Telephone", x: 1002, y: 386, level: 7 },
-  { id: "fighter", kind: "minigame", title: "Street Johanne", subtitle: "Taxi Papa", x: 1072, y: 454, level: 8 },
+  { id: "sass", kind: "minigame", title: "Blagues", subtitle: "Darons", x: 322, y: 354, level: 2 },
+  { id: "parental", kind: "minigame", title: "Controle", subtitle: "Telephone", x: 478, y: 408, level: 3 },
+  { id: "platform2", kind: "platform", title: "Mario 2", subtitle: "Famille", x: 638, y: 450, level: 4 },
+  { id: "skincare", kind: "minigame", title: "Make-up", subtitle: "Avant Moulin", x: 790, y: 392, level: 5 },
+  { id: "fighter", kind: "minigame", title: "Street Johanne", subtitle: "Taxi Papa", x: 910, y: 324, level: 6 },
+  { id: "platform3", kind: "platform", title: "Mario 3", subtitle: "Moulin", x: 1002, y: 386, level: 7 },
+  { id: "momParty", kind: "minigame", title: "Maman", subtitle: "S'incruste", x: 1072, y: 454, level: 8 },
   { id: "finale", kind: "finale", title: "Special AYA", subtitle: "Rythme", x: 1140, y: 492, level: 9 },
   { id: "showcase", kind: "video", title: "Showcase", subtitle: "AYA au Moulin", x: 1146, y: 382, level: 10 },
 ];
@@ -365,8 +365,8 @@ const platformRuns = {
     goalText: "DAMES",
     hearts: 3,
     enemySpeed: 1.12,
-    nextLevel: 3,
-    nodeIndex: 1,
+    nextLevel: 5,
+    nodeIndex: 3,
     quest: "Objectif: sortir avec les amis aux Dames. Bonus: remplir la trousse skin care.",
   },
   platform3: {
@@ -374,8 +374,8 @@ const platformRuns = {
     startX: 6420,
     spawnX: 6500,
     goalX: 9440,
-    nextLevel: 6,
-    nodeIndex: 4,
+    nextLevel: 8,
+    nodeIndex: 6,
     goalText: "AYA LIVE",
     hearts: 2,
     enemySpeed: 1.34,
@@ -1009,7 +1009,7 @@ function updateHud() {
     return;
   }
   if (state === "sass") {
-    zoneEl.textContent = "Reponses parents";
+    zoneEl.textContent = "Blagues darons";
     scoreEl.textContent = score;
     heartsEl.textContent = `${sassScore}/${SASS_TARGET_SCORE}`;
     return;
@@ -1593,7 +1593,7 @@ function finishSkincareGame() {
   const base = skincareMode === "level2" ? 20 : 12;
   score += base + skincareStyle * 3 - Math.min(8, skincareMistakes);
   if (skincareMode === "level2") {
-    completeLevelAndReturnToMap(5, 3);
+    completeLevelAndReturnToMap(6, 4);
     return;
   }
   state = "playing";
@@ -1610,7 +1610,7 @@ function finishSkincareGame() {
 function startSkincareLevel() {
   if (!skincareCollectionComplete()) {
     const missing = missingSkincareProducts().length;
-    mapSelected = 1;
+    mapSelected = 3;
     startPlatformLevel("platform2");
     addFloat(`trousse incomplete: ${missing} a choper`, player.x + 120, player.y - 28, "#ffd8ef");
     return;
@@ -1626,7 +1626,7 @@ function startParentalLevel() {
   parentalCodeInput = "";
   parentalComputerOpen = false;
   parentalStealth = 0;
-  parentalFeedback = "Niveau 7: trouve les indices dans Actu, puis tape le code 10 fois.";
+  parentalFeedback = "Niveau 3: trouve les indices dans Actu, puis tape le code 10 fois.";
   parentalFeedbackTimer = 180;
   parentalAlertTimer = 0;
   zoneEl.textContent = "Controle parental";
@@ -1642,7 +1642,7 @@ function startMomPartyLevel() {
   momCringe = 0;
   momSpawnTimer = 160;
   momGuests = [];
-  momFeedback = "Niveau 6: choisis la bonne excuse avant que Maman et ses copines entrent au Moulin.";
+  momFeedback = "Niveau 8: choisis la bonne excuse avant que Maman et ses copines entrent au Moulin.";
   momFeedbackTimer = 260;
   updateHud();
   syncMusicToState();
@@ -1683,7 +1683,7 @@ function updateMomPartyLevel(dt) {
 
   if (momRespect >= 100) {
     score += 12;
-    completeLevelAndReturnToMap(7, 5);
+    completeLevelAndReturnToMap(9, 7);
   }
 
   if (momFeedbackTimer > 0) momFeedbackTimer -= 1;
@@ -1847,7 +1847,7 @@ function startSassLevel() {
   sassRound = 0;
   sassSelected = 0;
   sassScore = 0;
-  sassFeedback = "Niveau 3: les parents demandent des trucs simples. Objectif: au moins 7 points.";
+  sassFeedback = "Niveau 2: les darons demandent des trucs simples. Objectif: au moins 7 points.";
   sassFeedbackTimer = 260;
   sassAdvanceTimer = 0;
   updateHud();
@@ -1867,7 +1867,7 @@ function updateSassLevel() {
       if (sassRound >= sassRounds.length) {
         if (sassScore >= SASS_TARGET_SCORE) {
           score += sassScore;
-          completeLevelAndReturnToMap(4, 2);
+          completeLevelAndReturnToMap(3, 1);
         } else {
           sassRound = 0;
           sassSelected = 0;
@@ -2027,7 +2027,7 @@ function submitParentalComputerCode() {
   if (parentalCodes % 3 === 0 && parentalStealth <= 0) parentalAlertTimer = 100;
   if (parentalCodes >= 10) {
     parentalComputerOpen = false;
-    completeLevelAndReturnToMap(8, 6);
+    completeLevelAndReturnToMap(4, 2);
   }
 }
 
@@ -2079,7 +2079,7 @@ function updateFighterLevel(dt) {
   if (fighterRoundOverTimer > 0) {
     fighterRoundOverTimer -= dt;
     updateFighterEffects(dt);
-    if (fighterRoundOverTimer <= 0) completeLevelAndReturnToMap(9, 7);
+    if (fighterRoundOverTimer <= 0) completeLevelAndReturnToMap(7, 5);
     input.leftPressed = false;
     input.rightPressed = false;
     input.jumpPressed = false;
@@ -3192,13 +3192,13 @@ function drawWorldMap() {
   drawMapDistrictLandmarks();
 
   drawMapLandmarkForNode(mapNodes[0], "college");
-  drawMapLandmarkForNode(mapNodes[1], "parents");
-  drawMapLandmarkForNode(mapNodes[2], "bubble");
-  drawMapLandmarkForNode(mapNodes[3], "mirror");
-  drawMapLandmarkForNode(mapNodes[4], "moulin");
-  drawMapLandmarkForNode(mapNodes[5], "mom");
-  drawMapLandmarkForNode(mapNodes[6], "phone");
-  drawMapLandmarkForNode(mapNodes[7], "versus");
+  drawMapLandmarkForNode(mapNodes[1], "bubble");
+  drawMapLandmarkForNode(mapNodes[2], "phone");
+  drawMapLandmarkForNode(mapNodes[3], "parents");
+  drawMapLandmarkForNode(mapNodes[4], "mirror");
+  drawMapLandmarkForNode(mapNodes[5], "versus");
+  drawMapLandmarkForNode(mapNodes[6], "moulin");
+  drawMapLandmarkForNode(mapNodes[7], "mom");
   drawMapLandmarkForNode(mapNodes[8], "sky");
   drawMapLandmarkForNode(mapNodes[9], "video");
   drawAyaTourBusOnMap();
@@ -6572,7 +6572,7 @@ function drawSassPrompt() {
   ctx.fillText(`Round ${Math.min(sassRound + 1, sassRounds.length)}/${sassRounds.length}`, 330, 98);
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 24px system-ui";
-  wrapText(`Parents: "${round.parent}"`, 330, 132, 610, 30);
+  wrapText(`Darons: "${round.parent}"`, 330, 132, 610, 30);
 
   ctx.fillStyle = "rgba(14,20,24,0.74)";
   ctx.fillRect(78, 72, 176, 86);
@@ -7039,7 +7039,7 @@ function drawPhoneHeader() {
   ctx.fillStyle = "#f8efd0";
   ctx.font = "900 24px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText("Niveau 7 - Controle parental", W / 2, 112);
+  ctx.fillText("Niveau 3 - Controle parental", W / 2, 112);
   ctx.fillStyle = "#86f7ff";
   ctx.font = "800 15px system-ui";
   ctx.fillText("Recupere les indices dans Actu, ouvre l'ordi, puis tape 6767 dix fois.", W / 2, 140);
