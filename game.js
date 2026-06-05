@@ -246,10 +246,33 @@ const skincareTargets = {
 };
 
 const momResponseOptions = [
-  { id: "soft", label: "Excuse calme", hint: "pour Maman", color: "#ffd8ef" },
-  { id: "adultBar", label: "Bar adultes", hint: "pour les copines", color: "#c8ff4e" },
-  { id: "noPhone", label: "Pas de selfie", hint: "selfie / danse", color: "#86f7ff" },
+  { id: "soft", label: "Plan Sophie", hint: "Maman veut entrer", color: "#ffd8ef" },
+  { id: "adultBar", label: "Bar adultes", hint: "copines de Maman", color: "#c8ff4e" },
+  { id: "noPhone", label: "Mode discret", hint: "selfie ou danse", color: "#86f7ff" },
 ];
+
+const momGuestTypeDetails = {
+  maman: {
+    title: "SOPHIE",
+    reason: "veut etre trop pote",
+    answer: "Plan Sophie",
+  },
+  copine: {
+    title: "COPINE DE MAMAN",
+    reason: "veut suivre Sophie",
+    answer: "Bar adultes",
+  },
+  selfie: {
+    title: "TELEPHONE SORTI",
+    reason: "story cringe devant tout le monde",
+    answer: "Mode discret",
+  },
+  dance: {
+    title: "DEBUT DE DANSE",
+    reason: "chore de maman en approche",
+    answer: "Mode discret",
+  },
+};
 
 const europeCapitals = [
   ["Albanie", "Tirana"],
@@ -1740,9 +1763,12 @@ function updateMomPartyLevel(dt) {
     if (!guest.missed && guest.x > 906) {
       guest.missed = true;
       momCringe = Math.min(100, momCringe + guest.cringe);
-      momFeedback = guest.type === "selfie"
-        ? "Story avec maman devant le Moulin: cringe +++"
-        : "Quelqu'un passe le sas et dit 'on est jeunes aussi'.";
+      momFeedback = {
+        maman: "Sophie passe: elle va negocier pour entrer comme si elle etait dans la bande.",
+        copine: "Une copine de maman passe: effet groupe d'adultes, alerte cringe.",
+        selfie: "Telephone sorti: story avec maman devant le Moulin, cringe +++.",
+        dance: "Debut de danse adulte: le dancefloor ado panique.",
+      }[guest.type] || "Quelqu'un passe le sas et dit 'on est jeunes aussi'.";
       momFeedbackTimer = 140;
     }
   }
@@ -1788,9 +1814,7 @@ function spawnMomGuest() {
 }
 
 function redirectMomGuest() {
-  const candidate = momGuests
-    .filter((guest) => guest.x > 246 && guest.x < 838)
-    .sort((a, b) => b.x - a.x)[0];
+  const candidate = currentMomGuestCandidate();
 
   if (!candidate) {
     momCringe = Math.min(100, momCringe + 4);
@@ -1804,10 +1828,10 @@ function redirectMomGuest() {
     momCringe = Math.min(100, momCringe + (candidate.type === "maman" ? 13 : 9));
     momRespect = Math.max(0, momRespect - 4);
     momFeedback = {
-      maman: `${selected.label}: Maman repond 'mais je suis cool moi aussi'.`,
-      copine: `${selected.label}: la copine comprend de travers et avance.`,
-      selfie: `${selected.label}: telephone deja sorti, danger.`,
-      dance: `${selected.label}: debut de choregraphie non autorise.`,
+      maman: `${selected.label}: Sophie repond 'mais je suis cool moi aussi'. Il fallait le Plan Sophie.`,
+      copine: `${selected.label}: la copine de maman comprend de travers. Il fallait Bar adultes.`,
+      selfie: `${selected.label}: le telephone reste sorti. Il fallait Mode discret.`,
+      dance: `${selected.label}: la chore continue. Il fallait Mode discret.`,
     }[candidate.type];
     momFeedbackTimer = 155;
     return;
@@ -1818,12 +1842,18 @@ function redirectMomGuest() {
   momCringe = Math.max(0, momCringe - 5);
   score += 2;
   momFeedback = {
-    maman: "Excuse valide: 'on se retrouve demain, promis'.",
-    copine: "Copine redirigee vers le bar des adultes.",
-    selfie: "Selfie esquive: camera sauvee.",
-    dance: "Danse de maman contournee de justesse.",
+    maman: "Plan Sophie valide: 'on se retrouve demain, promis'.",
+    copine: "Copine de maman redirigee vers le bar adultes.",
+    selfie: "Mode discret: selfie range, camera sauvee.",
+    dance: "Mode discret: danse de maman contournee de justesse.",
   }[candidate.type];
   momFeedbackTimer = 150;
+}
+
+function currentMomGuestCandidate() {
+  return momGuests
+    .filter((guest) => guest.x > 246 && guest.x < 838)
+    .sort((a, b) => b.x - a.x)[0];
 }
 
 function makeCapitalQuizQuestions() {
@@ -6864,12 +6894,14 @@ function drawMomPartyLevel() {
   ctx.fillText("SAS DE NEGOCIATION", 542, 326);
   ctx.fillStyle = "#b9c2bd";
   ctx.font = "800 13px system-ui";
-  ctx.fillText("Quand quelqu'un est dans le cadre jaune, choisis la bonne phrase puis valide.", 542, 348);
+  ctx.fillText("Trie l'incruste: Sophie = plan doux, copines = bar adultes, selfie/danse = discret.", 542, 348);
+  ctx.fillText("Quand la personne est dans le cadre jaune, choisis la carte du bas puis valide.", 542, 368);
   ctx.fillStyle = "#ff5f67";
   ctx.font = "900 14px system-ui";
   ctx.fillText("DANCEFLOOR ADO - interdit aux mamans trop potes", 1004, 470);
 
   for (const guest of momGuests) drawMomGuest(guest);
+  drawMomCurrentGuestGuide();
   drawMomJohanneFilter();
   drawMomResponseCards();
   drawMomPartyHud();
@@ -6880,6 +6912,7 @@ function drawMomPartyLevel() {
 function drawMomGuest(guest) {
   const x = guest.x + Math.sin(guest.wobble) * 8;
   const y = guest.y;
+  const details = momGuestTypeDetails[guest.type] || momGuestTypeDetails.maman;
   const isMom = guest.type === "maman";
   const isSelfie = guest.type === "selfie";
   const isDance = guest.type === "dance";
@@ -6888,7 +6921,7 @@ function drawMomGuest(guest) {
   ctx.save();
   ctx.translate(x, y);
   if (isMom) {
-    drawSophieMomSprite(46, 100, guest.label);
+    drawSophieMomSprite(46, 100, details.title);
     ctx.restore();
     ctx.textAlign = "left";
     return;
@@ -6912,9 +6945,9 @@ function drawMomGuest(guest) {
   ctx.roundRect(18, 42, 56, 48, 14);
   ctx.fill();
   ctx.fillStyle = "#f8efd0";
-  ctx.font = "900 10px system-ui";
+  ctx.font = "900 8px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText(guest.label, 46, 70);
+  ctx.fillText(isSelfie ? "SELFIE" : isDance ? "DANSE" : "COPINE", 46, 70);
   if (isSelfie) {
     ctx.fillStyle = "#101820";
     ctx.fillRect(64, 24, 20, 28);
@@ -6926,6 +6959,38 @@ function drawMomGuest(guest) {
     ctx.font = "900 22px system-ui";
     ctx.fillText("♪", 74, 22);
   }
+  ctx.restore();
+  ctx.textAlign = "left";
+}
+
+function drawMomCurrentGuestGuide() {
+  const guest = currentMomGuestCandidate();
+  if (!guest) return;
+  const details = momGuestTypeDetails[guest.type] || momGuestTypeDetails.maman;
+  drawMomGuestBadge(542, 224, details);
+}
+
+function drawMomGuestBadge(cx, y, details) {
+  const width = 336;
+  const labelCx = Math.max(width / 2 + 12, Math.min(W - width / 2 - 12, cx));
+  ctx.save();
+  ctx.fillStyle = "rgba(5, 6, 9, 0.9)";
+  ctx.beginPath();
+  ctx.roundRect(labelCx - width / 2, y, width, 72, 8);
+  ctx.fill();
+  ctx.strokeStyle = "#ffcf4e";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(labelCx - width / 2 + 4, y + 4, width - 8, 64);
+  ctx.fillStyle = "#ffcf4e";
+  ctx.font = "900 13px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(`A TRIER: ${details.title}`, labelCx, y + 22);
+  ctx.fillStyle = "#f8efd0";
+  ctx.font = "800 12px system-ui";
+  ctx.fillText(`Pourquoi: ${details.reason}`, labelCx, y + 42);
+  ctx.fillStyle = "#86f7ff";
+  ctx.font = "900 12px system-ui";
+  ctx.fillText(`Bonne carte: ${details.answer}`, labelCx, y + 60);
   ctx.restore();
   ctx.textAlign = "left";
 }
