@@ -62,17 +62,20 @@
             <h2>Showcase AYA au Moulin</h2>
             <div class="showcase-layout">
               <div class="showcase-player">
-                <iframe
-                  id="showcaseFrame"
+                <video
+                  id="showcaseLocalVideo"
                   title="Showcase Aya au Moulin"
-                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                  allowfullscreen
-                  referrerpolicy="strict-origin-when-cross-origin"
-                ></iframe>
+                  controls
+                  playsinline
+                  preload="metadata"
+                  poster="./assets/aya-moulin-final.png"
+                >
+                  <source src="./assets/showcase-aya-moulin.mp4" type="video/mp4">
+                </video>
               </div>
               <div class="showcase-poster">
                 <img src="./assets/aya-moulin-final.png" alt="AYA devant le Moulin de Douarnenez">
-                <p>Si TikTok masque le lecteur, le showcase s'ouvre avec le bouton.</p>
+                <p>Le showcase se joue ici dans le jeu. Le bouton TikTok reste en secours.</p>
               </div>
             </div>
             <a
@@ -81,7 +84,7 @@
               target="_blank"
               rel="noopener noreferrer"
             >
-              Lancer la video TikTok
+              Ouvrir TikTok en secours
             </a>
             <p class="showcase-hint">Espace ou entree quand le showcase est valide.</p>
           </div>

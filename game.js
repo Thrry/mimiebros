@@ -12,7 +12,7 @@ const resetBtn = document.querySelector("#resetBtn");
 const musicBtn = document.querySelector("#musicBtn");
 const soundBtn = document.querySelector("#soundBtn");
 const showcaseVideoEl = document.querySelector("#showcaseVideo");
-const showcaseFrame = document.querySelector("#showcaseFrame");
+const showcaseLocalVideo = document.querySelector("#showcaseLocalVideo");
 
 const W = canvas.width;
 const H = canvas.height;
@@ -25,8 +25,6 @@ const JUMP = -19.2;
 const PLAYER_SMALL = { w: 34, h: 54 };
 const PLAYER_BIG = { w: 46, h: 72 };
 const MANGO_POWER_FRAMES = 600;
-const SHOWCASE_TIKTOK_EMBED = "https://www.tiktok.com/player/v1/7549905634041466114?controls=1&progress_bar=1&play_button=1&volume_control=1&fullscreen_button=1&timestamp=1&music_info=0&description=0&rel=0";
-
 const mapArt = new Image();
 mapArt.src = "./assets/map-douarnenez-isometric.png";
 
@@ -1095,13 +1093,19 @@ function winGame() {
 }
 
 function setShowcaseVideoVisible(visible) {
-  if (!showcaseVideoEl || !showcaseFrame) return;
+  if (!showcaseVideoEl) return;
   showcaseVideoEl.classList.toggle("is-visible", visible);
   showcaseVideoEl.setAttribute("aria-hidden", String(!visible));
-  if (visible) {
-    if (!showcaseFrame.src) showcaseFrame.src = SHOWCASE_TIKTOK_EMBED;
-  } else {
-    showcaseFrame.src = "";
+  if (visible && musicGain && audioCtx) {
+    musicGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.02);
+  }
+  if (visible && showcaseLocalVideo) {
+    showcaseLocalVideo.load();
+  }
+  if (!visible && showcaseLocalVideo) {
+    showcaseLocalVideo.pause();
+    showcaseLocalVideo.currentTime = 0;
+    setMusicVolume();
   }
 }
 
@@ -3045,7 +3049,7 @@ function drawShowcaseVideoBackdrop() {
   ctx.fillText("SHOWCASE AU MOULIN", W / 2, 142);
   ctx.fillStyle = "#ff5fb7";
   ctx.font = "900 15px system-ui";
-  ctx.fillText("la video TikTok charge au centre", W / 2, 164);
+  ctx.fillText("la video du showcase se lance dans le panneau", W / 2, 164);
   ctx.textAlign = "left";
 
   ctx.fillStyle = "#0b0c12";
