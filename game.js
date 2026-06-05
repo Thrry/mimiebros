@@ -5552,18 +5552,22 @@ function drawFamilyCat(e, cat) {
 
 function drawPlatformQuest() {
   const chapter = currentPlatformChapter();
+  const x = 300;
+  const y = 62;
+  const w = 680;
+  const h = 54;
   ctx.fillStyle = "rgba(14, 20, 24, 0.72)";
-  ctx.fillRect(282, 632, 716, 64);
+  ctx.fillRect(x, y, w, h);
   ctx.strokeStyle = chapter.accent;
   ctx.lineWidth = 3;
-  ctx.strokeRect(286, 636, 708, 56);
+  ctx.strokeRect(x + 4, y + 4, w - 8, h - 8);
   ctx.fillStyle = "#f8efd0";
-  ctx.font = "900 17px system-ui";
+  ctx.font = "900 16px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText(`${chapter.id} - ${chapter.title}`, W / 2, 658);
+  ctx.fillText(`${chapter.id} - ${chapter.title}`, W / 2, y + 22);
   ctx.fillStyle = "#dfe8ea";
-  ctx.font = "800 14px system-ui";
-  ctx.fillText(activePlatformRun.quest, W / 2, 681);
+  ctx.font = "800 13px system-ui";
+  ctx.fillText(activePlatformRun.quest, W / 2, y + 42);
   ctx.textAlign = "left";
 }
 
