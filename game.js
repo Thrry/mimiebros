@@ -876,12 +876,13 @@ function startPlatformLevel(runId = "platform1") {
   shake = 0;
   careTimer = 0;
   careMode = "";
-  checkpointX = spawnX;
+  const spawnPoint = safeRespawnPoint(spawnX);
+  checkpointX = spawnPoint.x;
   spawnCueTimer = 150;
   levelOneTutorialTimer = activePlatformRun.id === "platform1" ? 900 : 0;
   Object.assign(player, {
-    x: spawnX,
-    y: spawnFloorY(spawnX) - PLAYER_SMALL.h,
+    x: spawnPoint.x,
+    y: spawnPoint.y,
     w: PLAYER_SMALL.w,
     h: PLAYER_SMALL.h,
     vx: 0,
@@ -1156,6 +1157,35 @@ function spawnFloorY(x) {
   return floor ? floor.y : FLOOR_Y;
 }
 
+function safeRespawnPoint(preferredX, width = PLAYER_SMALL.w, height = PLAYER_SMALL.h) {
+  const margin = 86;
+  const center = preferredX + width / 2;
+  const floors = level.platforms.filter((platform) => (
+    platform.kind === "ground"
+    && platform.y >= 500
+    && platform.x + platform.w >= activePlatformRun.startX - 120
+    && platform.x <= activePlatformRun.goalX + 180
+  ));
+  const floorCandidates = floors.length ? floors : level.platforms.filter((platform) => platform.kind === "ground");
+  const placeOnFloor = (floor) => {
+    const minX = floor.x + Math.min(margin, floor.w * 0.22);
+    const maxX = floor.x + floor.w - width - Math.min(margin, floor.w * 0.22);
+    const safeX = maxX > minX
+      ? Math.max(minX, Math.min(maxX, preferredX))
+      : floor.x + floor.w / 2 - width / 2;
+    return { x: safeX, y: floor.y - height, floor };
+  };
+  const containing = floorCandidates.find((floor) => (
+    center >= floor.x + 24 && center <= floor.x + floor.w - 24
+  ));
+  if (containing) return placeOnFloor(containing);
+
+  const closest = floorCandidates
+    .map(placeOnFloor)
+    .sort((a, b) => Math.abs(a.x - preferredX) - Math.abs(b.x - preferredX))[0];
+  return closest || { x: preferredX, y: FLOOR_Y - height };
+}
+
 function levelOnePerfect() {
   const startX = platformRuns.platform1.startX - 40;
   const endX = platformRuns.platform1.goalX + 40;
@@ -1265,10 +1295,12 @@ function addFloat(text, x, y, color = "#f2dc85") {
 }
 
 function continueFromCheckpoint() {
-  addFloat("continue", checkpointX + 20, FLOOR_Y - 110, "#86f7ff");
+  const respawn = safeRespawnPoint(checkpointX);
+  checkpointX = respawn.x;
+  addFloat("continue", checkpointX + 20, respawn.y - 56, "#86f7ff");
   Object.assign(player, {
     x: checkpointX,
-    y: FLOOR_Y - PLAYER_SMALL.h,
+    y: respawn.y,
     w: PLAYER_SMALL.w,
     h: PLAYER_SMALL.h,
     vx: 0,
@@ -1291,8 +1323,9 @@ function updateCheckpoint() {
   const nextCheckpoint = chapters.reduce((active, chapter) => (
     player.x >= chapter.start + 130 ? Math.max(active, chapter.start + 64) : active
   ), activePlatformRun.startX);
-  if (nextCheckpoint > checkpointX) {
-    checkpointX = nextCheckpoint;
+  const safeCheckpoint = safeRespawnPoint(nextCheckpoint).x;
+  if (safeCheckpoint > checkpointX + 16) {
+    checkpointX = safeCheckpoint;
     addFloat(`checkpoint ${currentPlatformChapter().id}`, player.x, player.y - 12, "#86f7ff");
   }
 }
